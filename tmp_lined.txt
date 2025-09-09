@@ -1,0 +1,486 @@
+   1: "use client";
+   2: 
+   3: import { useEffect, useMemo, useRef, useState } from "react";
+   4: import "./python.css";
+   5: 
+   6: export default function PythonVisualizerPage() {
+   7:   const [pyodide, setPyodide] = useState(null);
+   8:   const [loadingPyodide, setLoadingPyodide] = useState(true);
+   9:   const [code, setCode] = useState(`def fib(n):
+  10:     a, b = 0, 1
+  11:     seq = []
+  12:     for _ in range(n):
+  13:         seq.append(a)
+  14:         a, b = b, a + b
+  15:     return seq
+  16: 
+  17: nums = fib(6)
+  18: print("fib:", nums)
+  19: total = sum(nums)
+  20: print("total:", total)
+  21: `);
+  22:   const [events, setEvents] = useState([]);
+  23:   const [current, setCurrent] = useState(0);
+  24:   const [runError, setRunError] = useState("");
+  25:   const [running, setRunning] = useState(false);
+  26:   const [activeTab, setActiveTab] = useState("editor");
+  27:   const [selectedFrame, setSelectedFrame] = useState(0);
+  28:   const [tutorReady, setTutorReady] = useState(false);
+  29:   const [rawInputs, setRawInputs] = useState([]);
+  30:   const [awaitingInput, setAwaitingInput] = useState(false);
+  31:   const [inputPrompt, setInputPrompt] = useState("");
+  32:   const [inputValue, setInputValue] = useState("");
+  33: 
+  34:   // Load Pyodide on client
+  35:   useEffect(() => {
+  36:     let cancelled = false;
+  37:     const script = document.createElement("script");
+  38:     script.src = "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js";
+  39:     script.async = true;
+  40:     script.onload = async () => {
+  41:       try {
+  42:         const py = await window.loadPyodide({
+  43:           indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/",
+  44:         });
+  45:         if (cancelled) return;
+  46:         setPyodide(py);
+  47:         // Define advanced tracer (stack + heap) in the Python runtime
+  48:         const tracer = `
+  49: import sys, json, builtins, types
+  50: 
+  51: MAX_NODES = 200
+  52: MAX_DEPTH = 3
+  53: MAX_ITEMS = 50
+  54: MAX_REPR = 140
+  55: 
+  56: def _short_repr(v):
+  57:     try:
+  58:         r = repr(v)
+  59:     except Exception:
+  60:         r = f'<{type(v).__name__}>'
+  61:     if len(r) > MAX_REPR:
+  62:         r = r[:MAX_REPR] + '…'
+  63:     return r
+  64: 
+  65: def _is_primitive(v):
+  66:     return isinstance(v, (int, float, str, bool, type(None)))
+  67: 
+  68: class _StdoutCatcher:
+  69:     def __init__(self, buf):
+  70:         self.buf = buf
+  71:     def write(self, s):
+  72:         self.buf.append(s)
+  73:     def flush(self):
+  74:         pass
+  75: 
+  76: def run_with_trace(code_str):
+  77:     events = []
+  78:     g = {'__name__': '__main__'}
+  79:     stdout = []
+  80:     old_stdout = sys.stdout
+  81:     sys.stdout = _StdoutCatcher(stdout)
+  82: 
+  83:     def walk_stack(f):
+  84:         # Collect frames bottom->top limited to user code
+  85:         chain = []
+  86:         while f is not None:
+  87:             if f.f_code.co_filename == '<user_code>':
+  88:                 chain.append(f)
+  89:             f = f.f_back
+  90:         chain.reverse()
+  91:         return chain
+  92: 
+  93:     def snapshot(frame, event, arg):
+  94:         # Build heap & stack snapshot
+  95:         node_count = 0
+  96:         heap = {}
+  97:         seen = {}
+  98: 
+  99:         def refify(v, depth=0):
+ 100:             nonlocal node_count
+ 101:             if _is_primitive(v):
+ 102:                 return v
+ 103:             oid = id(v)
+ 104:             key = f'id{oid}'
+ 105:             if key in seen:
+ 106:                 return {'$ref': key}
+ 107:             if node_count >= MAX_NODES or depth >= MAX_DEPTH:
+ 108:                 return _short_repr(v)
+ 109:             seen[key] = True
+ 110:             node_count += 1
+ 111:             data = {'type': type(v).__name__, 'repr': _short_repr(v)}
+ 112:             try:
+ 113:                 if isinstance(v, (list, tuple, set, frozenset)):
+ 114:                     it = list(v)[:MAX_ITEMS]
+ 115:                     data['items'] = [refify(x, depth+1) for x in it]
+ 116:                 elif isinstance(v, dict):
+ 117:                     ent = list(v.items())[:MAX_ITEMS]
+ 118:                     kv = []
+ 119:                     for k, val in ent:
+ 120:                         # keys: try keep primitive else repr
+ 121:                         kk = k if _is_primitive(k) else _short_repr(k)
+ 122:                         kv.append([kk, refify(val, depth+1)])
+ 123:                     data['entries'] = kv
+ 124:                 elif isinstance(v, types.ModuleType):
+ 125:                     pass
+ 126:                 elif hasattr(v, '__dict__'):
+ 127:                     ent = list(v.__dict__.items())[:MAX_ITEMS]
+ 128:                     kv = []
+ 129:                     for k, val in ent:
+ 130:                         if k.startswith('__') and k.endswith('__'):
+ 131:                             continue
+ 132:                         kv.append([k, refify(val, depth+1)])
+ 133:                     data['attrs'] = kv
+ 134:                 # else: leave repr only
+ 135:             except Exception:
+ 136:                 pass
+ 137:             heap[key] = data
+ 138:             return {'$ref': key}
+ 139: 
+ 140:         stack_out = []
+ 141:         for fr in walk_stack(frame):
+ 142:             loc_out = {}
+ 143:             for k, v in fr.f_locals.items():
+ 144:                 if k.startswith('__') and k.endswith('__'):
+ 145:                     continue
+ 146:                 try:
+ 147:                     loc_out[k] = refify(v)
+ 148:                 except Exception:
+ 149:                     loc_out[k] = _short_repr(v)
+ 150:             stack_out.append({
+ 151:                 'func': fr.f_code.co_name,
+ 152:                 'line': fr.f_lineno,
+ 153:                 'locals': loc_out,
+ 154:             })
+ 155: 
+ 156:         ev = {
+ 157:             'event': event,
+ 158:             'line': frame.f_lineno,
+ 159:             'stack': stack_out,
+ 160:             'heap': heap,
+ 161:             'stdout': ''.join(stdout)
+ 162:         }
+ 163:         if event == 'return':
+ 164:             try:
+ 165:                 ev['return'] = refify(arg)
+ 166:             except Exception:
+ 167:                 ev['return'] = _short_repr(arg)
+ 168:         return ev
+ 169: 
+ 170:     def tracer(frame, event, arg):
+ 171:         if event not in ('call', 'line', 'return'):
+ 172:             return tracer
+ 173:         if frame.f_code.co_filename != '<user_code>':
+ 174:             return tracer
+ 175:         events.append(snapshot(frame, event, arg))
+ 176:         return tracer
+ 177: 
+ 178:     sys.settrace(tracer)
+ 179:     try:
+ 180:         compiled = compile(code_str, '<user_code>', 'exec')
+ 181:         exec(compiled, g, g)
+ 182:         status = 'ok'
+ 183:         error = None
+ 184:     except Exception as e:
+ 185:         status = 'error'
+ 186:         error = repr(e)
+ 187:     finally:
+ 188:         sys.settrace(None)
+ 189:         sys.stdout = old_stdout
+ 190:     return json.dumps({'status': status, 'events': events, 'error': error, 'stdout': ''.join(stdout)})
+ 191: `;
+ 192:         await py.runPythonAsync(tracer);
+ 193:       } catch (e) {
+ 194:         console.error(e);
+ 195:       } finally {
+ 196:         if (!cancelled) setLoadingPyodide(false);
+ 197:       }
+ 198:     };
+ 199:     document.body.appendChild(script);
+ 200:     return () => {
+ 201:       cancelled = true;
+ 202:       try { document.body.removeChild(script); } catch {}
+ 203:     };
+ 204:   }, []);
+ 205: 
+ 206:   const hasEvents = events && events.length > 0;
+ 207: 
+ 208:   // Python Tutor 
+ 209:   const pgLoggerLoadedRef = useRef(false);
+ 210:   const tutorAssetsLoadedRef = useRef(false);
+ 211: 
+ 212:   async function loadScriptOnce(src) {
+ 213:     return new Promise((resolve, reject) => {
+ 214:       if (document.querySelector(`script[src="${src}"]`)) return resolve();
+ 215:       const s = document.createElement('script');
+ 216:       s.src = src; s.async = true;
+ 217:       s.onload = () => resolve();
+ 218:       s.onerror = (e) => reject(new Error(`Failed to load ${src}`));
+ 219:       document.body.appendChild(s);
+ 220:     });
+ 221:   }
+ 222:   async function loadCssOnce(href) {
+ 223:     if (document.querySelector(`link[href="${href}"]`)) return;
+ 224:     const l = document.createElement('link');
+ 225:     l.rel = 'stylesheet'; l.href = href;
+ 226:     document.head.appendChild(l);
+ 227:   }
+ 228: 
+ 229:   async function ensureTutorAssets() {
+ 230:     if (tutorAssetsLoadedRef.current) return;
+ 231:     const localBase = '/pythontutor/v3';
+ 232:     const remoteBase = 'https://raw.githubusercontent.com/pathrise-eng/pathrise-python-tutor/master/v3';
+ 233:     const base = (process.env.NODE_ENV === 'production') ? localBase : localBase; // prefer local always
+ 234:     const fall = remoteBase;
+ 235:     async function tryLoad(loader, path) {
+ 236:       try { await loader(`${base}${path}`); }
+ 237:       catch { await loader(`${fall}${path}`); }
+ 238:     }
+ 239:     await tryLoad(loadCssOnce, `/js/jquery-ui-1.11.4/jquery-ui.css`);
+ 240:     await tryLoad(loadCssOnce, `/css/jquery.qtip.css`);
+ 241:     await tryLoad(loadCssOnce, `/css/pytutor.css`);
+ 242:     // must keep order due to globals
+ 243:     await tryLoad(loadScriptOnce, `/js/d3.v2.min.js`);
+ 244:     await tryLoad(loadScriptOnce, `/js/jquery-1.8.2.min.js`);
+ 245:     await tryLoad(loadScriptOnce, `/js/jquery.ba-bbq.min.js`);
+ 246:     await tryLoad(loadScriptOnce, `/js/jquery.ba-dotimeout.min.js`);
+ 247:     await tryLoad(loadScriptOnce, `/js/jquery.corner.js`);
+ 248:     await tryLoad(loadScriptOnce, `/js/jquery-ui-1.11.4/jquery-ui.min.js`);
+ 249:     await tryLoad(loadScriptOnce, `/js/jquery.jsPlumb-1.3.10-all-min.js`);
+ 250:     await tryLoad(loadScriptOnce, `/js/jquery.qtip.min.js`);
+ 251:     await tryLoad(loadScriptOnce, `/js/pytutor.js`);
+ 252:     tutorAssetsLoadedRef.current = true;
+ 253:   }
+ 254: 
+ 255:   async function ensurePgLogger() {
+ 256:     if (!pyodide) return;
+ 257:     if (pgLoggerLoadedRef.current) return;
+ 258:     // load modules directly into sys.modules to satisfy imports
+ 259:     const localEnc = '/pythontutor/v3/pg_encoder.py';
+ 260:     const localLog = '/pythontutor/v3/pg_logger.py';
+ 261:     const remoteEnc = 'https://raw.githubusercontent.com/pathrise-eng/pathrise-python-tutor/master/v3/pg_encoder.py';
+ 262:     const remoteLog = 'https://raw.githubusercontent.com/pathrise-eng/pathrise-python-tutor/master/v3/pg_logger.py';
+ 263:     async function getText(url, fallback) { try { const r = await fetch(url); if (!r.ok) throw new Error(); return await r.text(); } catch { const rr = await fetch(fallback); return await rr.text(); } }
+ 264:     const [encSrc, logSrc] = await Promise.all([
+ 265:       getText(localEnc, remoteEnc),
+ 266:       getText(localLog, remoteLog),
+ 267:     ]);
+ 268:     const pythonLoader = `
+ 269: import sys, types
+ 270: m_enc = types.ModuleType('pg_encoder');
+ 271: exec(compile(${JSON.stringify(''+"" )} or '', '<loader>', 'exec'))
+ 272: `;
+ 273:     // Due to string escaping complexity in template literal, we will set content via globals
+ 274:     pyodide.globals.set('___enc_src___', encSrc);
+ 275:     pyodide.globals.set('___log_src___', logSrc);
+ 276:     await pyodide.runPythonAsync(`
+ 277: import sys, types
+ 278: # stub optional custom modules used by pg_logger so imports don't fail
+ 279: for _name in ('callback_module','ttt_module','html_module','htmlexample_module','matrix','htmlFrame'):
+ 280:     if _name not in sys.modules:
+ 281:         sys.modules[_name] = types.ModuleType(_name)
+ 282: 
+ 283: m_enc = types.ModuleType('pg_encoder')
+ 284: exec(___enc_src___, m_enc.__dict__)
+ 285: sys.modules['pg_encoder'] = m_enc
+ 286: 
+ 287: m_log = types.ModuleType('pg_logger')
+ 288: exec(___log_src___, m_log.__dict__)
+ 289: sys.modules['pg_logger'] = m_log
+ 290: `);
+ 291:     pgLoggerLoadedRef.current = true;
+ 292:   }
+ 293: 
+ 294:   async function runWithTutor() {
+ 295:     if (!pyodide) return;
+ 296:     setRunning(true);
+ 297:     setRunError("");
+ 298:     try {
+ 299:       await ensureTutorAssets();
+ 300:       await ensurePgLogger();
+ 301:       // Build Python Tutor trace using pg_logger within Pyodide
+ 302:       pyodide.globals.set('___code_str___', code);
+ 303:       pyodide.globals.set('___raw_inputs___', JSON.stringify(rawInputs || []));
+ 304:       const jsonStr = await pyodide.runPythonAsync(`
+ 305: import json, sys
+ 306: import pg_logger
+ 307: trace = pg_logger.exec_script_str_local(___code_str___, ___raw_inputs___, False, False, lambda cod, tr: tr)
+ 308: json.dumps({'code': ___code_str___, 'trace': trace})
+ 309: `);
+ 310:       const data = JSON.parse(jsonStr);
+ 311:       // ensure container
+ 312:       const host = document.getElementById('opt-viz');
+ 313:       if (host) host.innerHTML = '';
+ 314:       // eslint-disable-next-line no-undef
+ 315:       const viz = new window.ExecutionVisualizer('opt-viz', Array.isArray(data.trace) ? data : { code, trace: [] }, {startingInstruction: 0});
+ 316:       // expose and ensure connectors are visible/redrawn
+ 317:       try {
+ 318:         window.myVisualizer = viz;
+ 319:         setTimeout(() => { try { viz.redrawConnectors(); } catch {} }, 0);
+ 320:         if (window.myVizResizeHandler) {
+ 321:           window.removeEventListener('resize', window.myVizResizeHandler);
+ 322:         }
+ 323:         window.myVizResizeHandler = () => { try { window.myVisualizer && window.myVisualizer.redrawConnectors(); } catch {} };
+ 324:         window.addEventListener('resize', window.myVizResizeHandler);
+ 325:       } catch {}
+ 326:       setTutorReady(true);
+ 327:       // detect raw_input request
+ 328:       try {
+ 329:         const t = Array.isArray(data.trace) ? data.trace : [];
+ 330:         const last = t.length ? t[t.length - 1] : null;
+ 331:         if (last && last.event === 'raw_input') {
+ 332:           setAwaitingInput(true);
+ 333:           setInputPrompt(String(last.prompt || 'Input'));
+ 334:         } else {
+ 335:           setAwaitingInput(false);
+ 336:           setInputPrompt("");
+ 337:         }
+ 338:       } catch {}
+ 339:       setActiveTab('preview');
+ 340:     } catch (e) {
+ 341:       setRunError(String(e));
+ 342:     } finally {
+ 343:       setRunning(false);
+ 344:     }
+ 345:   }
+ 346: 
+ 347:   async function submitInput() {
+ 348:     if (!awaitingInput) return;
+ 349:     const v = inputValue == null ? '' : String(inputValue);
+ 350:     setRawInputs((arr) => [...arr, v]);
+ 351:     setInputValue("");
+ 352:     // re-run with the new input
+ 353:     setTimeout(() => runWithTutor(), 0);
+ 354:   }
+ 355: 
+ 356:   const stepPrev = () => setCurrent((i) => Math.max(0, i - 1));
+ 357:   const stepNext = () => setCurrent((i) => Math.min((events.length || 1) - 1, i + 1));
+ 358:   const reset = () => {
+ 359:     setEvents([]);
+ 360:     setCurrent(0);
+ 361:     setRunError("");
+ 362:     setAwaitingInput(false);
+ 363:     setInputPrompt("");
+ 364:     setRawInputs([]);
+ 365:     setInputValue("");
+ 366:   };
+ 367: 
+ 368:   // Keyboard shortcuts for stepping
+ 369:   useEffect(() => {
+ 370:     const onKey = (e) => {
+ 371:       if (!hasEvents) return;
+ 372:       if (e.key === "ArrowLeft") stepPrev();
+ 373:       if (e.key === "ArrowRight") stepNext();
+ 374:     };
+ 375:     window.addEventListener("keydown", onKey);
+ 376:     return () => window.removeEventListener("keydown", onKey);
+ 377:   }, [hasEvents, events.length]);
+ 378: 
+ 379:   const codeLines = useMemo(() => code.split("\n"), [code]);
+ 380: 
+ 381:   // Python Tutor handles stack/heap rendering entirely.
+ 382: 
+ 383:   return (
+ 384:     <div className="py-root">
+ 385:       <header className="py-header">
+ 386:         <div className="py-header-inner">
+ 387:           <div className="brand">
+ 388:             <span className="brand-name">djuzeePython Visualizer</span>
+ 389:           </div>
+ 390:           <nav className="py-nav">
+ 391:             <a href="/" className="nav-btn">Homepage</a>
+ 392:           </nav>
+ 393:         </div>
+ 394:       </header>
+ 395: 
+ 396:       <main className="py-main">
+ 397:         <section className="panel editor-panel">
+ 398:           <div className="panel-header">
+ 399:             <div className="tabs">
+ 400:               <button className={`tab ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>Editor</button>
+ 401:               <button className={`tab ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>Preview</button>
+ 402:             </div>
+ 403:             <div className="status">
+ 404:               {loadingPyodide ? (
+ 405:                 <span className="badge loading">Loading Python</span>
+ 406:               ) : pyodide ? (
+ 407:                 <span className="badge ok">Python Ready</span>
+ 408:               ) : (
+ 409:                 <span className="badge error">Load failed</span>
+ 410:               )}
+ 411:             </div>
+ 412:           </div>
+ 413: 
+ 414:           {activeTab === "editor" ? (
+ 415:             <div className="editor-wrap">
+ 416:               <textarea
+ 417:                 value={code}
+ 418:                 onChange={(e) => setCode(e.target.value)}
+ 419:                 spellCheck={false}
+ 420:                 className="editor"
+ 421:                 aria-label="Python code editor"
+ 422:               />
+ 423:             </div>
+ 424:           ) : (
+ 425:             <div className="code-preview" aria-label="Code preview">
+ 426:               {codeLines.map((ln, idx) => (
+ 427:                 <div key={idx} className={`code-line`}>
+ 428:                   <span className="ln">{idx + 1}</span>
+ 429:                   <span className="lc">{ln === "" ? " " : ln}</span>
+ 430:                 </div>
+ 431:               ))}
+ 432:             </div>
+ 433:           )}
+ 434: 
+ 435:           <div className="controls">
+ 436:             <button className="btn primary" onClick={runWithTutor} disabled={!pyodide || loadingPyodide || running}>
+ 437:               {running ? "Tracing..." : "Run (Python Tutor)"}
+ 438:             </button>
+ 439:             {awaitingInput && (
+ 440:               <>
+ 441:                 <input
+ 442:                   className="input prompt"
+ 443:                   placeholder={inputPrompt || 'Input'}
+ 444:                   value={inputValue}
+ 445:                   onChange={(e) => setInputValue(e.target.value)}
+ 446:                   onKeyDown={(e) => { if (e.key === 'Enter') submitInput(); }}
+ 447:                   aria-label="Program input"
+ 448:                 />
+ 449:                 <button className="btn" onClick={submitInput} disabled={running || !pyodide}>Submit</button>
+ 450:               </>
+ 451:             )}
+ 452:             <button className="btn" onClick={reset} disabled={running}>Reset</button>
+ 453:           </div>
+ 454: 
+ 455:           {runError && (
+ 456:             <div className="callout error">
+ 457:               <div className="callout-title">Error</div>
+ 458:               <div className="callout-body">{runError}</div>
+ 459:             </div>
+ 460:           )}
+ 461:         </section>
+ 462: 
+ 463:         <section className="panel inspect-panel">
+ 464:           <div className="panel-header">
+ 465:             <h2 className="panel-title">Python Tutor</h2>
+ 466:             <div className="step-meta">
+ 467:               {tutorReady ? <span className="meta">Ready</span> : <span className="meta">Waiting to run</span>}
+ 468:             </div>
+ 469:           </div>
+ 470:           <div className="inspect-grid">
+ 471:             <div className="card tutor">
+ 472:               <div className="card-title">Visualization</div>
+ 473:               <div className="card-body">
+ 474:                 <div id="opt-viz"></div>
+ 475:                 {!tutorReady && <div className="empty">Run (Python Tutor) to render visualization</div>}
+ 476:               </div>
+ 477:             </div>
+ 478:           </div>
+ 479:         </section>
+ 480:       </main>
+ 481: 
+ 482:       <footer className="py-footer">
+ 483:       </footer>
+ 484:     </div>
+ 485:   );
+ 486: }
