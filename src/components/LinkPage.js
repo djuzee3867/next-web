@@ -23,6 +23,7 @@ export default function LinkPage() {
   }
   const links = [
     // หมายเหตุ: มีข้อความบางส่วนแสดงผลเพี้ยนในไฟล์เดิม จึงปรับให้อ่านง่ายขึ้น
+        { title: "E-portfolio", url: "https://djuzee-website.vercel.app/" },
     { title: "QR Code", url: "/qr" },
     { title: "File", url: "/file" },
     { title: "Python Visualizer", url: "/python" },
@@ -37,9 +38,6 @@ export default function LinkPage() {
 
       <main className="card">
         <header className="profile">
-          <div className="avatar" aria-hidden>
-            DJ
-          </div>
           <div className="profile-text">
             <h1 className="heading">djuzee</h1>
             <p className="subtitle">Link Page • Quick access</p>
