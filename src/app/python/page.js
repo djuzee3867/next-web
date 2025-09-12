@@ -3,6 +3,46 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./python.css";
 
+// Stable, module-scoped editor to avoid remounting on each render
+function EditorWithGutter({ code, setCode, codeLines, editorWrap, editorFont }) {
+  const taRef = useRef(null);
+  const gutRef = useRef(null);
+  useEffect(() => {
+    const ta = taRef.current;
+    const g = gutRef.current;
+    if (!ta || !g) return;
+    const onScroll = () => { g.scrollTop = ta.scrollTop; };
+    ta.addEventListener('scroll', onScroll);
+    return () => ta.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const digits = String(codeLines.length).length;
+  const approxDigitPx = Math.max(8, Math.round(editorFont * 0.6));
+  const gutterWidth = Math.max(3, digits + 1) * approxDigitPx; // px
+  return (
+    <div className="editor-shell" style={{ fontSize: `${editorFont}px` }}>
+      <div
+        className="editor-gutter"
+        ref={gutRef}
+        style={{ width: `${gutterWidth}px` }}
+        aria-hidden
+      >
+        {codeLines.map((_, i) => (
+          <div key={i} className="gut-line">{i + 1}</div>
+        ))}
+      </div>
+      <textarea
+        ref={taRef}
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        spellCheck={false}
+        className={`editor ${editorWrap ? 'wrap' : ''}`}
+        aria-label="Python code editor"
+      />
+    </div>
+  );
+}
+
 export default function PythonVisualizerPage() {
   const [pyodide, setPyodide] = useState(null);
   const [loadingPyodide, setLoadingPyodide] = useState(true);
@@ -23,7 +63,7 @@ print("total:", total)
   const [current, setCurrent] = useState(0);
   const [runError, setRunError] = useState("");
   const [running, setRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState("editor");
+  // Single editor view (Preview removed)
   const [selectedFrame, setSelectedFrame] = useState(0);
   const [tutorReady, setTutorReady] = useState(false);
   const [rawInputs, setRawInputs] = useState([]);
@@ -383,7 +423,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
           setInputPrompt("");
         }
       } catch {}
-      setActiveTab('preview');
+      // previously switched to preview; now editor-only
     } catch (e) {
       setRunError(String(e));
     } finally {
@@ -430,6 +470,8 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 
   const codeLines = useMemo(() => code.split("\n"), [code]);
 
+  
+
   // Python Tutor rendering entirely.
 
   return (
@@ -448,10 +490,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
       <main className="py-main">
         <section className="panel editor-panel">
           <div className="panel-header">
-            <div className="tabs">
-              <button className={`tab ${activeTab === 'editor' ? 'active' : ''}`} onClick={() => setActiveTab('editor')}>Editor</button>
-              <button className={`tab ${activeTab === 'preview' ? 'active' : ''}`} onClick={() => setActiveTab('preview')}>Preview</button>
-            </div>
+            {/* tabs removed */}
             <div className="status">
               {loadingPyodide ? (
                 <span className="badge loading">กำลังโหลด Python</span>
@@ -463,8 +502,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
             </div>
           </div>
 
-          {activeTab === "editor" ? (
-            <div className="editor-wrap">
+          <div className="editor-wrap">
               <div className="editor-toolbar">
                 <div className="tool-group">
                   <label className="tool-label">ตัวอย่าง</label>
@@ -507,25 +545,14 @@ json.dumps({'code': ___code_str___, 'trace': trace})
                 <button className="mini-btn" onPointerDown={ripple} onClick={async () => { try { const t = await navigator.clipboard.readText(); if (t) setCode(t); } catch {} }}>Paste</button>
                 <button className="mini-btn danger" onPointerDown={ripple} onClick={() => setCode('')}>Clear</button>
               </div>
-              <textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                spellCheck={false}
-                className={`editor ${editorWrap ? 'wrap' : ''}`}
-                aria-label="Python code editor"
-                style={{ fontSize: `${editorFont}px` }}
+              <EditorWithGutter
+                code={code}
+                setCode={setCode}
+                codeLines={codeLines}
+                editorWrap={editorWrap}
+                editorFont={editorFont}
               />
             </div>
-          ) : (
-            <div className="code-preview" aria-label="Code preview">
-              {codeLines.map((ln, idx) => (
-                <div key={idx} className={`code-line`}>
-                  <span className="ln">{idx + 1}</span>
-                  <span className="lc">{ln === "" ? " " : ln}</span>
-                </div>
-              ))}
-            </div>
-          )}
 
           <div className="controls">
             <button className={`btn primary ${running ? 'busy' : ''}`} onPointerDown={ripple} onClick={() => runWithTutor(false)} disabled={!pyodide || loadingPyodide || running}>
