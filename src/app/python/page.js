@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./python.css";
 
 // Stable, module-scoped editor to avoid remounting on each render
-function EditorWithGutter({ code, setCode, codeLines, editorWrap, editorFont }) {
+function EditorWithGutter({ code, setCode, codeLines, editorWrap, editorFont, editorSize, onResize }) {
   const taRef = useRef(null);
   const gutRef = useRef(null);
+  const shellRef = useRef(null);
+  const dragStateRef = useRef(null);
+  const [dragging, setDragging] = useState(null);
   useEffect(() => {
     const ta = taRef.current;
     const g = gutRef.current;
@@ -16,11 +19,72 @@ function EditorWithGutter({ code, setCode, codeLines, editorWrap, editorFont }) 
     return () => ta.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!onResize) return;
+    if (!shellRef.current) return;
+    if (editorSize && editorSize.width && editorSize.height) return;
+    const rect = shellRef.current.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    onResize({ width: Math.max(320, Math.round(rect.width)), height: Math.max(260, Math.round(rect.height)) });
+  }, [editorSize, onResize]);
+
   const digits = String(codeLines.length).length;
   const approxDigitPx = Math.max(8, Math.round(editorFont * 0.6));
   const gutterWidth = Math.max(3, digits + 1) * approxDigitPx; // px
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e) => {
+      const state = dragStateRef.current;
+      if (!state || !onResize) return;
+      const { dir, startX, startY, startWidth, startHeight } = state;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let width = startWidth;
+      let height = startHeight;
+      if (dir.includes('e')) width = Math.max(320, startWidth + dx);
+      if (dir.includes('s')) height = Math.max(260, startHeight + dy);
+      if (dir.includes('w')) width = Math.max(320, startWidth - dx);
+      if (dir.includes('n')) height = Math.max(260, startHeight - dy);
+      onResize({ width: Math.round(width), height: Math.round(height) });
+    };
+    const onUp = () => {
+      dragStateRef.current = null;
+      setDragging(null);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [dragging, onResize]);
+
+  const beginResize = (dir) => (e) => {
+    if (!shellRef.current) return;
+    e.preventDefault();
+    dragStateRef.current = {
+      dir,
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: shellRef.current.offsetWidth || 0,
+      startHeight: shellRef.current.offsetHeight || 0,
+    };
+    setDragging(dir);
+  };
+
+  const shellStyle = { fontSize: `${editorFont}px` };
+  if (editorSize && editorSize.width) shellStyle.width = editorSize.width;
+  if (editorSize && editorSize.height) shellStyle.height = editorSize.height;
   return (
-    <div className="editor-shell" style={{ fontSize: `${editorFont}px` }}>
+    <div className="editor-shell" ref={shellRef} style={shellStyle} data-dragging={dragging ? dragging : undefined}>
+      <div className="editor-resize-handle handle-n" onPointerDown={beginResize('n')} />
+      <div className="editor-resize-handle handle-s" onPointerDown={beginResize('s')} />
+      <div className="editor-resize-handle handle-e" onPointerDown={beginResize('e')} />
+      <div className="editor-resize-handle handle-w" onPointerDown={beginResize('w')} />
+      <div className="editor-resize-handle handle-ne" onPointerDown={beginResize('ne')} />
+      <div className="editor-resize-handle handle-nw" onPointerDown={beginResize('nw')} />
+      <div className="editor-resize-handle handle-se" onPointerDown={beginResize('se')} />
+      <div className="editor-resize-handle handle-sw" onPointerDown={beginResize('sw')} />
       <div
         className="editor-gutter"
         ref={gutRef}
@@ -68,12 +132,16 @@ print("total:", total)
   const [tutorReady, setTutorReady] = useState(false);
   const [rawInputs, setRawInputs] = useState([]);
   const rawInputsRef = useRef([]);
+  const vizResizeObserverRef = useRef(null);
+  const vizObservedHostRef = useRef(null);
+  const vizPointerUpHandlerRef = useRef(null);
   const [awaitingInput, setAwaitingInput] = useState(false);
   const [inputPrompt, setInputPrompt] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [showContent, setShowContent] = useState(false);
   const [editorWrap, setEditorWrap] = useState(true);
   const [editorFont, setEditorFont] = useState(14);
+  const [editorSize, setEditorSize] = useState({ width: 0, height: 0 });
 
   // Load Pyodide on client
   useEffect(() => {
@@ -378,6 +446,11 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 `);
       const data = JSON.parse(jsonStr);
       const host = document.getElementById('opt-viz');
+      if (vizObservedHostRef.current && vizPointerUpHandlerRef.current) {
+        try { vizObservedHostRef.current.removeEventListener('pointerup', vizPointerUpHandlerRef.current); } catch {}
+        vizObservedHostRef.current = null;
+        vizPointerUpHandlerRef.current = null;
+      }
       if (host) host.innerHTML = '';
       const safeData = Array.isArray(data.trace) ? data : { code, trace: [] };
       const viz = new window.ExecutionVisualizer('opt-viz', safeData, {
@@ -400,6 +473,35 @@ json.dumps({'code': ___code_str___, 'trace': trace})
         }
         window.myVizResizeHandler = () => { try { window.myVisualizer && window.myVisualizer.redrawConnectors(); } catch {} };
         window.addEventListener('resize', window.myVizResizeHandler);
+        if (vizResizeObserverRef.current) {
+          try { vizResizeObserverRef.current.disconnect(); } catch {}
+          vizResizeObserverRef.current = null;
+        }
+        if (typeof ResizeObserver !== 'undefined' && host) {
+          const ro = new ResizeObserver(() => {
+            try { viz.redrawConnectors(); } catch {}
+          });
+          const watchTargets = [
+            host,
+            host.querySelector('.executionVisualizer'),
+            host.querySelector('#dataViz'),
+            host.querySelector('#pyOutputPane'),
+            host.querySelector('#pyOutputPane textarea'),
+            host.querySelector('.ui-resizable'),
+          ].filter(Boolean);
+          watchTargets.forEach((el) => {
+            try { ro.observe(el); } catch {}
+          });
+          vizResizeObserverRef.current = ro;
+        }
+        if (host) {
+          const onPointerUp = () => {
+            try { viz.redrawConnectors(); } catch {}
+          };
+          host.addEventListener('pointerup', onPointerUp);
+          vizObservedHostRef.current = host;
+          vizPointerUpHandlerRef.current = onPointerUp;
+        }
         // also check trace directly from viz to detect raw_input
         try {
           const t2 = Array.isArray(viz.curTrace) ? viz.curTrace : [];
@@ -446,6 +548,16 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 
   const stepPrev = () => setCurrent((i) => Math.max(0, i - 1));
   const stepNext = () => setCurrent((i) => Math.min((events.length || 1) - 1, i + 1));
+  const updateEditorSize = useCallback((next) => {
+    if (!next) return;
+    setEditorSize((prev) => {
+      const width = Math.max(320, Math.round((next.width ?? prev.width ?? 0)));
+      const height = Math.max(260, Math.round((next.height ?? prev.height ?? 0)));
+      if (prev.width === width && prev.height === height) return prev;
+      return { width, height };
+    });
+  }, []);
+
   const reset = () => {
     setEvents([]);
     setCurrent(0);
@@ -456,6 +568,24 @@ json.dumps({'code': ___code_str___, 'trace': trace})
     setRawInputs([]);
     setInputValue("");
   };
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.myVizResizeHandler) {
+        window.removeEventListener('resize', window.myVizResizeHandler);
+        delete window.myVizResizeHandler;
+      }
+      if (vizResizeObserverRef.current) {
+        try { vizResizeObserverRef.current.disconnect(); } catch {}
+        vizResizeObserverRef.current = null;
+      }
+      if (vizObservedHostRef.current && vizPointerUpHandlerRef.current) {
+        try { vizObservedHostRef.current.removeEventListener('pointerup', vizPointerUpHandlerRef.current); } catch {}
+        vizObservedHostRef.current = null;
+        vizPointerUpHandlerRef.current = null;
+      }
+    };
+  }, []);
 
   // Keyboard
   useEffect(() => {
@@ -474,8 +604,15 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 
   // Python Tutor rendering entirely.
 
+  const rootStyle = useMemo(() => {
+    if (!editorSize.width) return undefined;
+    const pad = 60;
+    const width = Math.max(320, editorSize.width + pad);
+    return { '--editor-panel-width': `${width}px` };
+  }, [editorSize.width]);
+
   return (
-    <div className={`py-root ${showContent ? 'show' : ''}`}>
+    <div className={`py-root ${showContent ? 'show' : ''}`} style={rootStyle}>
       <header className="py-header">
         <div className="py-header-inner">
           <div className="brand">
@@ -551,6 +688,8 @@ json.dumps({'code': ___code_str___, 'trace': trace})
                 codeLines={codeLines}
                 editorWrap={editorWrap}
                 editorFont={editorFont}
+                editorSize={editorSize}
+                onResize={updateEditorSize}
               />
             </div>
 
@@ -620,3 +759,4 @@ json.dumps({'code': ___code_str___, 'trace': trace})
     </div>
   );
 }
+
