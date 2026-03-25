@@ -23,12 +23,12 @@ export default function LinkPage() {
   }
   const links = [
     // หมายเหตุ: มีข้อความบางส่วนแสดงผลเพี้ยนในไฟล์เดิม จึงปรับให้อ่านง่ายขึ้น
-        { title: "E-portfolio", url: "https://djuzee-website.vercel.app/" },
+    { title: "E-portfolio", url: "https://djuzee-website.vercel.app/" },
     { title: "QR Code", url: "/qr" },
     // { title: "File", url: "/file" },
     { title: "Python Visualizer", url: "/python" },
     { title: "Bot discord", url: "https://discord.com/oauth2/authorize?client_id=1293199567503753307&permissions=8&integration_type=0&scope=bot" },
-    {title: "mju present", url: "https://www.canva.com/design/DAHCyPSthGc/y0QQoLaIe689Vj4d8J4UZQ/edit?utm_content=DAHCyPSthGc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton"},
+    { title: "mju present", url: "https://www.canva.com/design/DAHCyPSthGc/y0QQoLaIe689Vj4d8J4UZQ/edit?utm_content=DAHCyPSthGc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" },
   ];
 
   return (
