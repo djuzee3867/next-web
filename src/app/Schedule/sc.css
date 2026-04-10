@@ -85,6 +85,7 @@
     display: flex;
     gap: 0.5rem;
     padding-top: 0.25rem;
+    flex-wrap: wrap;
 }
 
 .tt-color-btn {
@@ -106,18 +107,20 @@
 }
 
 /* Day Sections */
+.tt-section-day1,
+.tt-section-day2 {
+    padding: 1.25rem;
+    border-radius: 1rem;
+}
+
 .tt-section-day1 {
     background-color: #eef2ff;
     border: 1px solid #e0e7ff;
-    padding: 1.25rem;
-    border-radius: 1rem;
 }
 
 .tt-section-day2 {
     background-color: #ecfdf5;
     border: 1px solid #d1fae5;
-    padding: 1.25rem;
-    border-radius: 1rem;
     margin-top: 1rem;
 }
 
@@ -147,7 +150,6 @@
     border: none;
     cursor: pointer;
     transition: all 0.2s;
-    width: auto;
     font-size: 1rem;
 }
 
@@ -169,6 +171,8 @@
     border-top: 1px solid #f1f5f9;
     padding-top: 1rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 /* --- Timetable Grid --- */
@@ -177,7 +181,16 @@
     border-radius: 1.5rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
-    overflow: hidden;
+    overflow-x: auto;
+    /* สำคัญมาก: เปิดระบบเลื่อนแนวนอน */
+    -webkit-overflow-scrolling: touch;
+    /* เลื่อนลื่นๆ บน iOS */
+}
+
+/* สร้าง Wrapper บังคับความกว้างขั้นต่ำ เพื่อไม่ให้เบียดกันเกินไปในจอมือถือ */
+.tt-grid-scroll-area {
+    min-width: 800px;
+    /* ถ้าจอกว้างไม่ถึง 800px จะมีแถบ Scrollbar ขึ้นมาอัตโนมัติ */
 }
 
 .tt-grid-header {
@@ -197,6 +210,11 @@
     font-weight: bold;
     font-size: 0.85rem;
     color: #64748b;
+    position: sticky;
+    left: 0;
+    background: #f8fafc;
+    z-index: 50;
+    /* ล็อกคอลัมน์ชื่อวัน */
 }
 
 .tt-col-time-wrapper {
@@ -240,8 +258,11 @@
     font-size: 1.1rem;
     color: #334155;
     background: white;
-    z-index: 10;
     transition: background 0.2s;
+    position: sticky;
+    left: 0;
+    z-index: 45;
+    /* ล็อกคอลัมน์ชื่อวัน */
 }
 
 .tt-grid-row:hover .tt-day-name {
@@ -285,14 +306,15 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
     overflow: hidden;
-    backdrop-filter: blur(4px);
     cursor: default;
+    z-index: 30;
+    /* ใส่พื้นหลังเป็นสีทึบผสมความโปร่งแสง เพื่อไม่ให้เวลาไถผ่านตารางแล้วมองทะลุ */
 }
 
 .tt-subject-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    z-index: 30;
+    z-index: 35;
 }
 
 .tt-card-header {
@@ -323,19 +345,21 @@
     border: none;
     font-weight: bold;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s;
+    opacity: 1;
+    /* แสดงตลอดบนมือถือ */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.tt-subject-card:hover .tt-btn-delete {
-    opacity: 1;
-}
+@media (hover: hover) {
+    .tt-btn-delete {
+        opacity: 0;
+    }
 
-.tt-btn-delete:hover {
-    background: #dc2626;
+    .tt-subject-card:hover .tt-btn-delete {
+        opacity: 1;
+    }
 }
 
 .tt-time-badge {
@@ -367,6 +391,8 @@
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 1rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .tt-summary-title {
@@ -380,6 +406,7 @@
     gap: 1rem;
     font-size: 0.9rem;
     font-weight: bold;
+    flex-wrap: wrap;
 }
 
 .tt-stat-badge {
@@ -396,7 +423,7 @@
 
 .tt-summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
 }
 
@@ -469,13 +496,65 @@
     transition: color 0.2s;
 }
 
-.tt-item-delete:hover {
-    color: #ef4444;
-}
-
 .tt-empty {
     text-align: center;
     color: #94a3b8;
     padding: 2rem;
     font-weight: bold;
+}
+
+/* =========================================
+   📱 MOBILE RESPONSIVE TWEAKS 
+========================================= */
+@media (max-width: 768px) {
+    .tt-wrapper {
+        padding: 1rem 0.5rem;
+    }
+
+    .tt-card {
+        padding: 1.25rem;
+        border-radius: 1rem;
+    }
+
+    .tt-title {
+        font-size: 1.8rem;
+    }
+
+    .tt-form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* บังคับแบบฟอร์มเป็นแนวตั้ง 100% */
+    .tt-input-group.col-span-2 {
+        grid-column: span 1;
+    }
+
+    .tt-form-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tt-btn-submit {
+        width: 100%;
+        text-align: center;
+    }
+
+    .tt-summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* ลดความกว้างของคอลัมน์เวลาบนมือถือ เพื่อเพิ่มพื้นที่ */
+    .tt-col-day,
+    .tt-day-name {
+        width: 60px;
+        font-size: 0.8rem;
+    }
+
+    .tt-grid-scroll-area {
+        min-width: 700px;
+    }
+
+    /* ความกว้างตารางสำหรับมือถือ */
 }

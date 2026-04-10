@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import './sc.css'; // <--- อย่าลืมนำเข้าไฟล์ CSS ที่สร้างไว้
+import './sc.css';
 
-const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
+const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์'];
 const presetColors = ['#6366f1', '#ec4899', '#8b5cf6', '#14b8a6', '#f59e0b', '#ef4444', '#10b981'];
 
 export default function Timetable() {
@@ -18,6 +18,11 @@ export default function Timetable() {
     const [timeError, setTimeError] = useState('');
 
     const validateTimeFormat = (time) => /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+
+    // ฟังก์ชันช่วยแปลงสี HEX เป็น HEX แบบโปร่งใส (ใส่ opacity 25% = 40 ในรหัส HEX)
+    const getTransparentColor = (hex) => {
+        return `${hex}40`;
+    };
 
     const getAllClassInstances = (classList) => {
         const instances = [];
@@ -35,21 +40,21 @@ export default function Timetable() {
         setTimeError('');
 
         if (!validateTimeFormat(formData.startTime) || !validateTimeFormat(formData.endTime)) {
-            return setTimeError('พิมพ์เวลาวันที่ 1 ในรูปแบบ HH:MM เช่น 08:30');
+            return setTimeError('กรุณาพิมพ์เวลาวันที่ 1 ในรูปแบบ HH:MM');
         }
         if (formData.hasSecondDay && (!validateTimeFormat(formData.startTime2) || !validateTimeFormat(formData.endTime2))) {
-            return setTimeError('พิมพ์เวลาวันที่ 2 ในรูปแบบ HH:MM เช่น 13:00');
+            return setTimeError('กรุณาพิมพ์เวลาวันที่ 2 ในรูปแบบ HH:MM');
         }
 
         const startVal1 = parseInt(formData.startTime.replace(':', ''));
         const endVal1 = parseInt(formData.endTime.replace(':', ''));
-        if (startVal1 >= endVal1) return setTimeError('เวลาเริ่มวันที่ 1 ต้องมาก่อนเวลาจบ');
+        if (startVal1 >= endVal1) return setTimeError('เวลาเริ่มต้องมาก่อนเวลาจบ');
 
         let startVal2, endVal2;
         if (formData.hasSecondDay) {
             startVal2 = parseInt(formData.startTime2.replace(':', ''));
             endVal2 = parseInt(formData.endTime2.replace(':', ''));
-            if (startVal2 >= endVal2) return setTimeError('เวลาเริ่มวันที่ 2 ต้องมาก่อนเวลาจบ');
+            if (startVal2 >= endVal2) return setTimeError('เวลาเริ่มต้องมาก่อนเวลาจบ');
         }
 
         const allExisting = getAllClassInstances(classes);
@@ -72,7 +77,7 @@ export default function Timetable() {
         if (formData.hasSecondDay) checkConflict(formData.day2, startVal2, endVal2);
 
         if (isConflict) {
-            if (!window.confirm(`⚠️ เวลานี้ชนกับวิชา: ${conflictSubjects.join(', ')} \n`)) return;
+            if (!window.confirm(`⚠️ เวลานี้ชนกับวิชา: ${conflictSubjects.join(', ')} \nต้องการเพิ่มต่อไปหรือไม่?`)) return;
         }
 
         setClasses([...classes, { ...formData, id: Date.now().toString() }]);
@@ -80,7 +85,7 @@ export default function Timetable() {
     };
 
     const removeClass = (refId) => {
-        if (window.confirm("ต้องการลบวิชานี้ไหม? (หากมี 2 วันจะถูกลบทั้งคู่)")) {
+        if (window.confirm("ต้องการลบวิชานี้ใช่หรือไม่? (หากมี 2 วันจะถูกลบทั้งคู่)")) {
             setClasses(classes.filter(c => c.id !== refId));
         }
     };
@@ -119,17 +124,17 @@ export default function Timetable() {
                     <form onSubmit={handleAddClass}>
                         <div className="tt-form-grid">
                             <div className="tt-input-group col-span-2">
-                                <label className="tt-label">ชื่อวิชา</label>
-                                <input type="text" className="tt-input" required placeholder=""
+                                <label className="tt-label">ชื่อวิชา / กิจกรรม</label>
+                                <input type="text" className="tt-input" required placeholder="เช่น Data Structures"
                                     value={formData.subject} onChange={e => setFormData({ ...formData, subject: e.target.value })} />
                             </div>
                             <div className="tt-input-group">
-                                <label className="tt-label">รายละเอียด</label>
-                                <input type="text" className="tt-input" placeholder=""
+                                <label className="tt-label">รายละเอียด (ห้อง, อาจารย์)</label>
+                                <input type="text" className="tt-input" placeholder="เช่น Lab 401"
                                     value={formData.details} onChange={e => setFormData({ ...formData, details: e.target.value })} />
                             </div>
                             <div className="tt-input-group">
-                                <label className="tt-label">สี</label>
+                                <label className="tt-label">เลือกสีตาราง</label>
                                 <div className="tt-color-picker">
                                     {presetColors.map(color => (
                                         <button type="button" key={color} onClick={() => setFormData({ ...formData, color })}
@@ -191,56 +196,61 @@ export default function Timetable() {
 
                         <div className="tt-form-footer">
                             <span className="tt-error">{timeError}</span>
-                            <button type="submit" className="tt-btn-submit">เพิ่มลงตาราง</button>
+                            <button type="submit" className="tt-btn-submit">+ เพิ่มลงตาราง</button>
                         </div>
                     </form>
                 </div>
 
                 {/* 2. Timetable Grid */}
                 <div className="tt-grid-container">
-                    <div className="tt-grid-header">
-                        <div className="tt-col-day">DAY \ TIME</div>
-                        <div className="tt-col-time-wrapper">
-                            {Array.from({ length: 12 }).map((_, i) => (
-                                <div key={i} className="tt-time-label" style={{ left: `${(i / 11) * 100}%` }}>
-                                    {i + 7}:00
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    {/* เพิ่ม Scroll Area Wrapper เข้ามาตรงนี้ */}
+                    <div className="tt-grid-scroll-area">
 
-                    {days.map((day) => (
-                        <div key={day} className="tt-grid-row">
-                            <div className="tt-day-name">{day}</div>
-                            <div className="tt-canvas">
-
-                                {/* Lines */}
-                                <div className="tt-bg-lines">
-                                    {Array.from({ length: 11 }).map((_, i) => (
-                                        <div key={i} className="tt-hour-block">
-                                            <div className="tt-half-hour-line"></div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Cards */}
-                                {flatClasses.filter(c => c.day === day).map((cls) => {
-                                    const style = getPositionStyle(cls.startTime, cls.endTime);
-                                    return (
-                                        <div key={cls.id} className="tt-subject-card"
-                                            style={{ ...style, backgroundColor: `${cls.color}25`, borderColor: cls.color }}>
-                                            <div className="tt-card-header">
-                                                <div className="tt-subject-name">{cls.subject}</div>
-                                                <button type="button" onClick={() => removeClass(cls.refId)} className="tt-btn-delete">✕</button>
-                                            </div>
-                                            <div className="tt-time-badge" style={{ color: cls.color }}>{cls.startTime} - {cls.endTime}</div>
-                                            {cls.details && <div className="tt-details">{cls.details}</div>}
-                                        </div>
-                                    )
-                                })}
+                        <div className="tt-grid-header">
+                            <div className="tt-col-day">DAY \ TIME</div>
+                            <div className="tt-col-time-wrapper">
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                    <div key={i} className="tt-time-label" style={{ left: `${(i / 11) * 100}%` }}>
+                                        {i + 7}:00
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    ))}
+
+                        {days.map((day) => (
+                            <div key={day} className="tt-grid-row">
+                                <div className="tt-day-name">{day}</div>
+                                <div className="tt-canvas">
+
+                                    {/* Lines */}
+                                    <div className="tt-bg-lines">
+                                        {Array.from({ length: 11 }).map((_, i) => (
+                                            <div key={i} className="tt-hour-block">
+                                                <div className="tt-half-hour-line"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Cards */}
+                                    {flatClasses.filter(c => c.day === day).map((cls) => {
+                                        const style = getPositionStyle(cls.startTime, cls.endTime);
+                                        return (
+                                            <div key={cls.id} className="tt-subject-card"
+                                                style={{ ...style, backgroundColor: getTransparentColor(cls.color), borderColor: cls.color }}>
+                                                <div className="tt-card-header">
+                                                    <div className="tt-subject-name">{cls.subject}</div>
+                                                    <button type="button" onClick={() => removeClass(cls.refId)} className="tt-btn-delete">✕</button>
+                                                </div>
+                                                <div className="tt-time-badge" style={{ color: cls.color }}>{cls.startTime} - {cls.endTime}</div>
+                                                {cls.details && <div className="tt-details">{cls.details}</div>}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+
+                    </div> {/* ปิด Scroll Area */}
                 </div>
 
                 {/* 3. Summary */}
@@ -254,7 +264,7 @@ export default function Timetable() {
                     </div>
 
                     {classes.length === 0 ? (
-                        <div className="tt-empty">ยังไม่มีข้อมูลในตาราง</div>
+                        <div className="tt-empty">ยังไม่มีข้อมูลในตาราง ลองเพิ่มวิชาจากฟอร์มด้านบนดูสิ!</div>
                     ) : (
                         <div className="tt-summary-grid">
                             {days.map(day => {
