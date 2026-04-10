@@ -28,7 +28,6 @@ export default function LinkPage() {
     { title: "File", url: "/file" },
     { title: "Python Visualizer", url: "/python" },
     { title: "Bot discord", url: "https://discord.com/oauth2/authorize?client_id=1293199567503753307&permissions=8&integration_type=0&scope=bot" },
-    { title: "mju present", url: "https://www.canva.com/design/DAHCyPSthGc/y0QQoLaIe689Vj4d8J4UZQ/edit?utm_content=DAHCyPSthGc&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" },
   ];
 
   return (
