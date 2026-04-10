@@ -28,6 +28,7 @@ export default function LinkPage() {
     { title: "File", url: "/file" },
     { title: "Python Visualizer", url: "/python" },
     { title: "Bot discord", url: "https://discord.com/oauth2/authorize?client_id=1293199567503753307&permissions=8&integration_type=0&scope=bot" },
+    { title: "Schedule", url: "/Schedule" },
   ];
 
   return (
