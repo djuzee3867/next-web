@@ -1,275 +1,170 @@
-.page-container {
-  position: relative;
+/* Reset & Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #cfcfcf;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #1a1a1a;
+}
+
+/* Layout */
+.page-wrapper {
   min-height: 100vh;
-  background: #ffffff; /* minimal white */
-  overflow: hidden;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
-    Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji",
-    "Segoe UI Emoji";
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 96px 24px 32px; /* space for navbar */
+  padding: 60px 24px;
 }
 
-/* Minimal navbar for LinkPage */
-.lp-navbar {
-  position: sticky;
-  top: 0;
-  inset-inline: 0;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  z-index: 30;
-  transform: translateY(0);
-  transition: transform 200ms ease;
-}
-.lp-navbar--hidden { transform: translateY(-100%); }
-.lp-navbar-container {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.lp-navbar-logo {
-  font-weight: 800;
-  color: #0f172a;
-  text-decoration: none;
-}
-.lp-navbar-links { display: flex; gap: 10px; }
-.lp-navbar-link {
-  color: #0f172a;
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-}
-.lp-navbar-link:hover { border-color: #e5e7eb; background: #f8fafc; }
-
-.blob-1 {
-  display: none; /* remove blob for flat design */
-}
-
-.blob-2 {
-  display: none; /* remove blob for flat design */
-}
-
-/* Card container */
-.card {
-  z-index: 1;
+.main-content {
   width: 100%;
-  max-width: 560px;
-  background: #ffffff; /* pure white */
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 1.25rem 1.25rem 1rem;
-  animation: cardIn 520ms cubic-bezier(.2,.7,.2,1) both;
+  max-width: 1000px;
 }
 
-.profile {
+/* Header */
+.section-header {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eaeaec;
 }
 
-.avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
+.main-title {
+  font-size: 2.2rem;
   font-weight: 800;
-  color: #0f172a;
-  background: #f1f5f9; /* subtle */
-  border: 1px solid #e5e7eb;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
 }
 
-.profile-text {
+.section-header h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.count-badge {
+  background: #eaeaec;
+  color: #4a4a4a;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Links Grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* ---------------------------------------------------
+   Project Card (Default State)
+   ตอนเข้าเว็บ ทุกการ์ดจะมีสีขาวเหมือนกันหมด
+--------------------------------------------------- */
+.project-card {
+  background: #ffffff;
+  border: 1px solid #eaeaec;
+  border-radius: 16px;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
   display: flex;
   flex-direction: column;
+  /* เพิ่ม transition ให้ครอบคลุม background และสีข้อความ เพื่อให้สมูทเวลา hover */
+  transition: all 0.3s ease; 
 }
 
-.heading {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0;
-  color: #1e3a8a;
-}
-
-.subtitle {
-  margin: 0.15rem 0 0;
-  color: #475569;
-  font-size: 0.95rem;
-}
-
-.links {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.link {
+.card-header {
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  padding: 0.9rem 1rem;
-  border-radius: 12px;
-  text-decoration: none;
-  color: #0f172a;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.card-header h4 {
+  font-size: 1.15rem;
   font-weight: 600;
-  transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
-  position: relative;
-  overflow: hidden; /* for ripple */
-  opacity: 0;
-  transform: translateY(6px) scale(.98);
-  animation: fadeUp 420ms cubic-bezier(.2,.7,.2,1) both;
+  color: #1a1a1a;
+  transition: color 0.3s ease;
 }
 
-.link:hover {
-  background: #f8fafc; /* subtle */
-  border-color: #cbd5e1;
+.more-options {
+  color: #888;
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: color 0.3s ease;
 }
 
-.link:active {
-  transform: translateY(0) scale(.985);
+.card-desc {
+  font-size: 0.9rem;
+  color: #666;
+  flex: 1;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  transition: color 0.3s ease;
 }
 
-.link:focus-visible {
-  outline: 3px solid #93c5fd;
-  outline-offset: 2px;
+.card-footer {
+  display: flex;
+  justify-content: flex-end; /* ดันลูกศรไปชิดขวา เพราะเอาวันที่ออกแล้ว */
+  align-items: center;
+  font-size: 0.85rem;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 16px;
+  transition: border-color 0.3s ease;
 }
 
-.icon {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  background: #f1f5f9;
-  color: #0f172a;
+.arrow-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  transition: transform 0.2s ease, color 0.3s ease;
 }
 
-.emoji {
-  font-size: 16px;
+/* ---------------------------------------------------
+   Hover Effect (เปลี่ยนสีตอนเอาเมาส์ชี้)
+--------------------------------------------------- */
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.1);
+  background: #1c1c1e; /* เปลี่ยนพื้นหลังเป็นสีดำเทา */
+  border-color: #1c1c1e;
 }
 
-.title {
-  flex: 1 1 auto;
+/* เปลี่ยนสีข้อความด้านในเมื่อ Hover */
+.project-card:hover .card-header h4,
+.project-card:hover .arrow-icon {
+  color: #ffffff; /* หัวข้อและลูกศรเป็นสีขาว */
 }
 
-.arrow {
-  color: #334155;
+.project-card:hover .card-desc,
+.project-card:hover .more-options {
+  color: #a0a0a5; /* รายละเอียดเป็นสีเทาอ่อน */
 }
 
-.links .link:nth-child(1) { animation-delay: .05s; }
-.links .link:nth-child(2) { animation-delay: .10s; }
-.links .link:nth-child(3) { animation-delay: .15s; }
-.links .link:nth-child(4) { animation-delay: .20s; }
-.links .link:nth-child(5) { animation-delay: .25s; }
-.links .link:nth-child(6) { animation-delay: .30s; }
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(20px);
-  }
+.project-card:hover .card-footer {
+  border-color: #333; /* ขอบเส้นคั่นด้านล่างเปลี่ยนให้กลืนกับพื้นสีดำ */
 }
 
-@keyframes cardIn {
-  0% { opacity: 0; transform: translateY(8px) scale(.98); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+.project-card:hover .arrow-icon {
+  transform: translateX(4px); /* ลูกศรขยับไปทางขวานิดหน่อย */
 }
 
-@keyframes fadeUp {
-  0% { opacity: 0; transform: translateY(6px) scale(.98); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* Ripple effect */
-.ripple {
-  position: absolute;
-  pointer-events: none;
-  border-radius: 9999px;
-  background: currentColor;
-  opacity: 0.14;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -50%) scale(0);
-  animation: ripple 560ms ease-out forwards;
-}
-
-@keyframes ripple {
-  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.18; }
-  100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .page-container {
-    background: #0b1220;
+/* Responsive */
+@media (max-width: 600px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
-  .lp-navbar { background: #0b1220; border-color: #334155; }
-  .lp-navbar-logo { color: #e2e8f0; }
-  .lp-navbar-link { color: #e2e8f0; }
-  .lp-navbar-link:hover { background: #111827; border-color: #334155; }
-  .card {
-    background: #0f172a;
-    border-color: #334155;
-  }
-  .avatar {
-    color: #e2e8f0;
-    background: #1f2937;
-    border-color: #334155;
-  }
-  .heading {
-    color: #e2e8f0;
-  }
-  .subtitle {
-    color: #94a3b8;
-  }
-  .link {
-    color: #e2e8f0;
-    background: #0f172a; /* flat */
-    border-color: #334155;
-  }
-  .link:hover {
-    background: #111827; /* flat hover */
-    border-color: #475569;
-  }
-  .icon {
-    background: #1f2937; /* flat */
-    color: #e2e8f0;
-  }
-  .arrow {
-    color: #94a3b8;
-  }
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .blob-1,
-  .blob-2 {
-    animation: none;
-  }
-  .link,
-  .arrow {
-    transition: none;
-  }
-  .card,
-  .link {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-  .ripple {
-    animation: none;
-    opacity: 0;
+  .cards-grid {
+    grid-template-columns: 1fr;
   }
 }
