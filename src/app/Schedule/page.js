@@ -64,7 +64,7 @@ export default function Home() {
   const handleSaveClass = (subjectData, sessionsData, editSessionId = null) => {
     const conflictSubject = checkConflict(sessionsData, editSessionId);
     if (conflictSubject) {
-      showAlert('⚠️ เวลาเรียนชนกัน!', `ไม่สามารถเพิ่มคาบเรียนได้ เนื่องจากเวลาซ้อนกับวิชา "${conflictSubject}"`);
+      showAlert('เวลาเรียนชนกัน!', `ไม่สามารถเพิ่มคาบเรียนได้ เนื่องจากเวลาซ้อนกับวิชา "${conflictSubject}"`);
       return; 
     }
 
