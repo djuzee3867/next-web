@@ -190,8 +190,8 @@ const handleExportImage = async () => {
           <div className="header-right" data-html2canvas-ignore="true">
             <div className="action-buttons">
               <button className="btn-add-mobile" onClick={() => { setSessionPrefill(null); setActiveModal('class'); }}>+ Add</button>
-                        <a href='/' style={{ textDecoration: 'none' }}>    <button className="btn-print"> <span className="hide-mobile">Home</span></button></a>
-              <button className="btn-print" onClick={handleExportImage} title="บันทึกเป็นรูปภาพ"> <span className="hide-mobile">Save</span></button>
+              <a href='/' style={{ textDecoration: 'none' }} >    <button className="btn-print" > <span>Home</span></button></a>
+              <button className="btn-print" onClick={handleExportImage} title="บันทึกเป็นรูปภาพ"> <span >Save</span></button>
               <button className="btn-clear" onClick={handleClearAll} title="ล้างตาราง">🗑️ <span className="hide-mobile">Clear</span></button>
               <button className="theme-btn" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}>
                 {theme === 'dark' ? '☀️' : '🌙'}
