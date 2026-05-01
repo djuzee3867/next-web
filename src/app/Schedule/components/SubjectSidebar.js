@@ -52,11 +52,32 @@ export default function SubjectSidebar({ subjects, onAdd, onDelete }) {
           padding: 12px; background: var(--surface-alt); border-radius: 10px; 
           border-left: 4px solid; transition: transform 0.2s, box-shadow 0.2s; 
         }
+        .sub-info { 
+          flex: 1; /* ให้ใช้พื้นที่ที่เหลือทั้งหมด */
+          min-width: 0; /* สำคัญมาก! ช่วยให้ text-overflow ทำงานได้เมื่ออยู่ร่วมกับ Flexbox */
+          cursor: grab;
+        }
+          .subject-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        .drag-icon { font-size: 0.8rem; opacity: 0.4; margin-right: 4px; cursor: grab; flex-shrink: 0; }
         .subject-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .drag-icon { font-size: 0.8rem; opacity: 0.4; margin-right: 4px; cursor: grab; }
-        .sub-name { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); display: flex; align-items: center; }
-        .sub-code { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; padding-left: 18px; }
-        .del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .sub-name { 
+          font-weight: 700; font-size: 0.9rem; color: var(--text-primary); 
+          display: flex; align-items: center; 
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* ตัดข้อความที่ยาวเกินด้วย ... */
+        }
+        .sub-code { 
+          font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; padding-left: 18px; 
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* ตัดข้อความที่ยาวเกินด้วย ... */
+        }        
+        .del-btn { 
+          flex-shrink: 0; /* บังคับไม่ให้ปุ่มลบหดตัว */
+          margin-left: 8px; /* เว้นระยะห่างจากชื่อวิชาหน่อย */
+          background: none; border: none; color: var(--text-muted); cursor: pointer; 
+          border-radius: 6px; width: 24px; height: 24px; display: flex; 
+          align-items: center; justify-content: center; transition: 0.2s; 
+        }
         .del-btn:hover { background: #ff475720; color: #ff4757; }
       `}</style>
     </div>

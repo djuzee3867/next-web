@@ -44,8 +44,20 @@ export default function SessionDetailModal({ subject, session, onDelete, onEdit,
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-color-bar { height: 6px; }
         .modal-body { padding: 28px 28px 24px; }
-        .subject-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; }
-        h2 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 20px; }
+        .subject-badge { 
+          display: inline-block; padding: 4px 12px; border-radius: 20px; 
+          font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; 
+          max-width: 100%; /* ไม่ให้ป้ายกว้างเกิน Modal */
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* ตัดข้อความด้วย ... */
+        }
+        
+        h2 { 
+          font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 20px; 
+          /* ยอมให้ข้อความยาวๆ ขึ้นบรรทัดใหม่ และถ้าเป็นคำติดกันยาวๆ ให้ตัดคำได้เลย */
+          word-wrap: break-word; 
+          overflow-wrap: break-word; 
+          hyphens: auto; 
+        }
         .info-grid { display: flex; flex-direction: column; gap: 12px; }
         .info-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface-alt); border-radius: 10px; }
         .info-label { font-size: 0.82rem; color: var(--text-muted); min-width: 70px; }

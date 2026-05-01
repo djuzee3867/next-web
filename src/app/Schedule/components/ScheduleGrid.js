@@ -94,11 +94,15 @@ export default function ScheduleGrid({ subjects, onCellClick, onCellDrop, onSess
                 onMouseEnter={() => setHoveredSession(session.id)}
                 onMouseLeave={() => setHoveredSession(null)}
               >
-                <div className="session-content">
-                  <div className="session-name">
-                    {subject.code && <span style={{opacity: 0.8, marginRight: '6px'}}>{subject.code}</span>}
+              <div className="session-content">
+                  {/* แยกรหัสวิชาไว้บรรทัดบน */}
+                  {subject.code && <div className="session-code">{subject.code}</div>}
+                  
+                  {/* ชื่อวิชาอยู่บรรทัดถัดมา */}
+                  <div className="session-name" title={subject.name}>
                     {subject.name}
                   </div>
+                  
                   <div className="session-time">{session.startTime} – {session.endTime}</div>
                 </div>
               </div>
@@ -158,9 +162,32 @@ export default function ScheduleGrid({ subjects, onCellClick, onCellDrop, onSess
           z-index: 5; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; 
         }
         .session-card:hover { transform: translateY(-2px); filter: brightness(1.1); z-index: 10; }
-        .session-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; }
-        .session-name { font-weight: 800; font-size: 0.95rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-        .session-time { font-size: 0.75rem; font-weight: 500; opacity: 0.9; margin-top: auto; font-family: 'Space Mono', monospace; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px; align-self: flex-start; }
+        .session-content { 
+          position: relative; z-index: 2; height: 100%; 
+          display: flex; flex-direction: column; gap: 2px; 
+        }
+        
+        .session-code { 
+          font-size: 0.72rem; font-weight: 700; opacity: 0.85; 
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+          letter-spacing: 0.03em;
+        }
+        
+        .session-name { 
+          font-weight: 800; font-size: 0.9rem; line-height: 1.2; 
+          /* บังคับให้อยู่ในกรอบ ถ้าเกิน 2 บรรทัดให้ใส่ ... */
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+          overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.15); 
+          word-break: break-word; /* ป้องกันคำยาวทะลุกรอบ */
+        }
+        
+        .session-time { 
+          font-size: 0.7rem; font-weight: 600; opacity: 0.95; 
+          margin-top: auto; font-family: 'Space Mono', monospace; 
+          background: rgba(0,0,0,0.15); padding: 2px 6px; 
+          border-radius: 4px; align-self: flex-start; 
+          white-space: nowrap; /* ห้ามเวลาขึ้นบรรทัดใหม่ */
+        }
       `}</style>
     </div>
   );
