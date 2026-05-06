@@ -8,11 +8,11 @@ export default function LinkPage() {
   // นำวันที่ (date) และ isDark ออกทั้งหมด
   const links = [
     { title: "E-portfolio", desc: "My personal works and resume", url: "https://djuzee-website.vercel.app/" },
-    { title: "QR Code", desc: "Generate and manage quick links", url: "/qr" },
-    { title: "File", desc: "Cloud storage and document processing", url: "/file" },
+    // { title: "File", desc: "Cloud storage and document processing", url: "/file" },
     { title: "Python Visualizer", desc: "Interactive python code execution", url: "/python" },
     { title: "Bot discord", desc: "Server management and automation", url: "https://discord.com/oauth2/authorize?client_id=1293199567503753307&permissions=8&integration_type=0&scope=bot" },
     { title: "Schedule", desc: "Timetable and appointment tracking", url: "/Schedule" },
+    { title: "QR Code", desc: "Generate and manage quick links", url: "/qr" },
     { title: "Foodwaste", desc: "Food Waste Predictor", url: "/foodwaste" },
   ];
 
