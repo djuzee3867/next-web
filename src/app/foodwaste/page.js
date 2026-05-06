@@ -246,8 +246,8 @@ export default function FoodWastePage() {
                   <label className="fw-label">เพศ</label>
                   <select name="gender" className="fw-input" value={form.gender} onChange={set} required>
                     <option value="">เลือกเพศ</option>
-                    <option value="male">ชาย (Male = 1)</option>
-                    <option value="female">หญิง (Female = 0)</option>
+                    <option value="male">ชาย</option>
+                    <option value="female">หญิง</option>
                   </select>
                 </div>
                 <div className="fw-field">
