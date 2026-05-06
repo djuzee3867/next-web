@@ -13,6 +13,7 @@ export default function LinkPage() {
     { title: "Python Visualizer", desc: "Interactive python code execution", url: "/python" },
     { title: "Bot discord", desc: "Server management and automation", url: "https://discord.com/oauth2/authorize?client_id=1293199567503753307&permissions=8&integration_type=0&scope=bot" },
     { title: "Schedule", desc: "Timetable and appointment tracking", url: "/Schedule" },
+    { title: "Foodwaste", desc: "Food Waste Predictor", url: "/foodwaste" },
   ];
 
   return (

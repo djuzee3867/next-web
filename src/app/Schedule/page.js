@@ -127,37 +127,42 @@ export default function Home() {
       setDialog(null);
     }, true);
   };
-
-const handleExportImage = async () => {
+  const handleExportImage = async () => {
     if (!captureRef.current) return;
     try {
-      // 1. เพิ่ม Class ไปที่ Body เพื่อปลดล็อกให้ตารางกางออกเต็ม 100%
       document.body.classList.add('export-mode');
-      
-      // 2. รอให้ Browser ประมวลผล Layout ใหม่แป๊บนึง (สำคัญมาก)
+
+      // ใช้ JS ล็อกความกว้าง 1440px ป้องกัน Layout พังตอนหน้าจอเล็ก
+      const target = captureRef.current;
+      const originalWidth = target.style.width;
+      target.style.width = '1440px';
+
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // 3. เริ่ม Capture รูปภาพ
-      const canvas = await html2canvas(captureRef.current, {
+      const canvas = await html2canvas(target, {
         backgroundColor: theme === 'dark' ? '#0b0f19' : '#f8fafc',
-        scale: 2, // เพิ่มความละเอียดภาพ
-        windowWidth: captureRef.current.scrollWidth, // บังคับให้อ่านความกว้างที่แท้จริง
+        scale: 2, 
+        useCORS: true, // สำคัญ: ช่วยแก้ Error แครชเวลาประมวลผล
+        windowWidth: 1440, // บอกให้ html2canvas รู้ว่าหน้าจอกว้าง 1440px
         ignoreElements: (el) => el.getAttribute('data-html2canvas-ignore') === 'true'
       });
       
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = `Schedule_${new Date().getTime()}.png`;
+      link.download = `Class_Schedule_${new Date().getTime()}.png`;
       link.href = dataUrl;
       link.click();
+
+      target.style.width = originalWidth; // คืนค่าความกว้างเดิม
+
     } catch (err) {
-      showAlert('ข้อผิดพลาด', 'ไม่สามารถบันทึกรูปภาพได้ในขณะนี้');
+      console.error(err);
+      showAlert('Error', 'Failed to export image.');
     } finally {
-      // 4. เอา Class ออก เพื่อให้หน้าเว็บกลับมามี Scroll เลื่อนได้ตามปกติ
       document.body.classList.remove('export-mode');
+      document.body.classList.remove('hide-empty-title'); 
     }
   };
-
   let totalMinutes = 0;
   let allSessions = [];
   subjects.forEach(subj => {
@@ -359,25 +364,13 @@ const handleExportImage = async () => {
         @media (max-width: 768px) { .header { padding: 12px 16px; flex-wrap: wrap; gap: 12px; } .logo h1 { font-size: 1.1rem; } .hide-mobile { display: none; } .content { padding: 16px; gap: 24px; } .summary-header { flex-direction: column; align-items: flex-start; gap: 12px; } .summary-badges { flex-wrap: wrap; } .summary-grid { grid-template-columns: 1fr; } }
         :global(body.export-mode) { overflow-x: auto; }
         :global(body.export-mode .schedule-wrapper) { 
-          width: max-content !important; 
-          min-width: 100% !important; 
+          min-width: max-content !important; 
         }
-        :global(body.export-mode .header) { 
-          position: relative !important; /* ปลด Header ไม่ให้เกาะติดขอบจอ */
-        }
-        :global(body.export-mode .main-layout) { 
-          display: block !important; /* ยกเลิก Grid ของ Sidebar */
-          overflow: visible !important; 
-        }
-        :global(body.export-mode .content) { 
-          overflow: visible !important; 
-        }
-        :global(body.export-mode .grid-wrapper) { 
-          overflow: visible !important; /* ปลด Scroll ตารางแนวนอน */
-        }
-        
-        /* ซ่อนส่วนที่ไม่ต้องการให้อยู่ในรูปภาพ */
-        :global(body.export-mode .sidebar-panel),
+        :global(body.export-mode .header) { position: relative !important; }
+        :global(body.export-mode .main-layout) { display: block !important; overflow: visible !important; }
+        :global(body.export-mode .content) { overflow: visible !important; }
+        :global(body.export-mode .grid-wrapper) { overflow: visible !important; }
+        :global(body.export-mode .sidebar-panel), :global(body.export-mode .action-buttons), :global(body.export-mode .row-del-btn) { display: none !important; }
         :global(body.export-mode .action-buttons),
         :global(body.export-mode .row-del-btn) { 
           display: none !important; 
