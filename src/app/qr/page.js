@@ -116,7 +116,7 @@ export default function QRGenerator() {
           <div className="logo">
             <div className="">
             </div>
-            <span className="logo-text">djuzee QRGenerator</span>
+            <span className="logo-text">QRGenerator</span>
           </div>
           <nav className="nav">
             <a href="/">
