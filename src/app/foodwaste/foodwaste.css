@@ -865,3 +865,617 @@
   border-radius: 4px;
   transition: width 1s ease-in-out;
 }
+
+/* ===== METRICS EXPLANATION (กราฟิกอธิบายค่าตัวชี้วัด) ===== */
+.fw-metrics {
+  margin-top: 40px;
+  border-top: 1px dashed var(--border);
+  padding-top: 32px;
+}
+
+.fw-metrics__intro {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 24px;
+}
+
+.fw-metrics__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .fw-metrics__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .fw-metrics__grid { grid-template-columns: 1fr; }
+}
+
+.fw-metric-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.fw-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--orange-dim);
+  transition: background 0.3s ease;
+}
+
+.fw-metric-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(249,115,22,0.3);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.fw-metric-card:hover::before {
+  background: var(--orange);
+}
+
+.fw-metric-card__label {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--orange2);
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.fw-metric-card__name {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.fw-metric-card__desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text2);
+  margin: 0;
+}
+
+/* ===== POSTER A0 SECTION ===== */
+.fw-poster-section {
+  padding: 60px 0 80px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+}
+
+.fw-poster__wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.fw-poster__box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.fw-poster__header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.fw-poster__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+}
+
+.fw-poster__subtitle {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.fw-poster__a0 {
+  width: 100%;
+  /* ล็อกสัดส่วนกว้าง x ยาว ให้ตรงกับกระดาษ A0 (1 : 1.414) */
+  aspect-ratio: 1 / 1.414;
+  background: var(--bg);
+  border: 2px dashed var(--border2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fw-poster__a0 img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* เปลี่ยนเป็น cover หากต้องการให้ภาพเต็มขอบพอดี */
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 2;
+}
+
+.fw-poster__placeholder {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 1;
+  text-align: center;
+}
+.fw-poster__placeholder span {
+  display: block;
+  font-size: 11px;
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+/* ===== INTERACTIVE MODEL VISUALIZER (FAST ANIMATIONS & NEW XGBOOST) ===== */
+.fw-vis {
+  margin: 40px 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.fw-vis__tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.fw-vis__tab {
+  flex: 1; padding: 16px; background: transparent; border: none;
+  border-bottom: 2px solid transparent; color: var(--muted);
+  font-family: var(--mono); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease; white-space: nowrap;
+}
+.fw-vis__tab:hover { color: var(--text2); background: rgba(255,255,255,0.02); }
+.fw-vis__tab--active { color: var(--orange2); border-bottom-color: var(--orange); background: var(--orange-dim); }
+
+.fw-vis__canvas {
+  padding: 40px 20px; min-height: 440px; display: flex;
+  align-items: center; justify-content: center; position: relative;
+  background: var(--surface); 
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(249,115,22,0.05) 0%, transparent 60%),
+    linear-gradient(0deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  background-position: center center;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* Tooltip / Info Panel */
+.fw-vis__info {
+  margin: 24px; padding: 16px 20px; background: var(--surface2);
+  border-left: 4px solid var(--orange); border-radius: 8px; min-height: 80px;
+}
+.fw-vis__info-title { font-size: 14px; font-weight: 700; color: var(--orange2); margin-bottom: 6px; }
+.fw-vis__info-desc { font-size: 13px; color: var(--text); margin: 0; line-height: 1.6; }
+
+/* === FAST Animations === */
+@keyframes fadeInSlide { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.3); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes flowLine { to { stroke-dashoffset: -100; } }
+
+.fw-anim-fast { opacity: 0; animation: fadeInSlide 0.25s ease-out forwards; }
+.fw-delay-1 { animation-delay: 0.05s; }
+.fw-delay-2 { animation-delay: 0.15s; }
+.fw-delay-3 { animation-delay: 0.25s; }
+.fw-delay-4 { animation-delay: 0.35s; }
+.fw-delay-5 { animation-delay: 0.45s; }
+.fw-delay-6 { animation-delay: 0.55s; }
+.fw-delay-7 { animation-delay: 0.65s; }
+
+/* === 1. ANN === */
+.fw-ann-svg { width: 100%; max-width: 750px; height: 340px; overflow: visible; }
+.fw-ann-line { stroke: rgba(255,255,255,0.1); stroke-width: 1.5; stroke-dasharray: 4; animation: flowLine 1.5s linear infinite; }
+.fw-ann-box-group { cursor: crosshair; }
+.fw-ann-box { fill: rgba(255,255,255,0.02); stroke: rgba(255,255,255,0.1); stroke-dasharray: 4; rx: 8; transition: all 0.2s; }
+.fw-ann-node { fill: var(--bg2); stroke: var(--text2); stroke-width: 2.5; transition: all 0.2s; }
+.fw-ann-text { fill: var(--text2); font-family: var(--mono); font-size: 11px; user-select: none; transition: all 0.2s; }
+.fw-ann-box-group:hover .fw-ann-box { stroke: var(--orange); fill: var(--orange-dim); }
+.fw-ann-box-group:hover .fw-ann-node { stroke: var(--orange); fill: var(--bg2); }
+.fw-ann-box-group:hover .fw-ann-text { fill: var(--orange2); font-weight: bold; }
+/* Final Node = Orange */
+.fw-ann-node.final-node { fill: var(--orange-dim); stroke: var(--orange); filter: drop-shadow(0 0 8px rgba(249,115,22,0.4)); }
+
+/* === 2. XGBoost (NEW Diagram - image_a455a1) === */
+.fw-xgb3-svg { width: 100%; max-width: 750px; height: 420px; overflow: visible; font-family: var(--mono); cursor: crosshair; }
+.fw-xgb3-box { fill: var(--surface2); stroke: var(--border2); rx: 6; transition: all 0.2s; }
+.fw-xgb3-box-group:hover .fw-xgb3-box { stroke: var(--orange); fill: var(--orange-dim); }
+/* Final Result Box = Orange */
+.fw-xgb3-box-final { fill: var(--orange-dim) !important; stroke: var(--orange) !important; filter: drop-shadow(0 0 8px rgba(249,115,22,0.3)); }
+.fw-xgb3-text { fill: var(--text); font-size: 12px; text-anchor: middle; dominant-baseline: middle; pointer-events: none; transition: all 0.2s; }
+.fw-xgb3-box-group:hover .fw-xgb3-text { fill: var(--orange2); font-weight: bold; }
+.fw-xgb3-text-final { fill: var(--orange2); font-weight: bold; font-size: 14px; }
+.fw-xgb3-text-small { font-size: 10px; fill: var(--text2); }
+.fw-xgb3-line { stroke: var(--muted); stroke-width: 2; fill: none; }
+.fw-xgb3-line-res { stroke: var(--text); stroke-width: 1.5; stroke-dasharray: 4; fill: none; animation: flowLine 1.5s linear infinite; }
+/* Node Colors */
+.fw-xgb3-node-b { fill: #0ea5e9; stroke: rgba(0,0,0,0.3); stroke-width: 2; }
+.fw-xgb3-node-r { fill: #ef4444; stroke: rgba(0,0,0,0.3); stroke-width: 2; }
+
+/* === 3. Random Forest (Parallel Anim) === */
+.fw-rf-container { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 700px; font-family: var(--mono); }
+.fw-rf-data { background: var(--surface2); border: 1px solid var(--border2); padding: 12px 30px; border-radius: 6px; color: var(--text); font-weight: bold; cursor: crosshair; font-size: 13px; }
+.fw-rf-branches { display: flex; gap: 20px; justify-content: center; width: 100%; flex-wrap: wrap; }
+.fw-rf-branch { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; min-width: 140px; }
+.fw-rf-bag { background: rgba(255,255,255,0.05); border: 1px dashed var(--text2); padding: 6px 12px; border-radius: 4px; font-size: 11px; color: var(--text); }
+.fw-rf-treebox { width: 100%; border: 1px solid var(--border2); border-radius: 8px; padding: 20px 10px; background: rgba(0,0,0,0.2); cursor: crosshair; transition: all 0.2s; text-align: center; }
+.fw-rf-treebox:hover { border-color: var(--orange); box-shadow: 0 0 15px rgba(249,115,22,0.15); background: var(--orange-dim); }
+.fw-rf-pred { background: var(--surface2); border: 1px solid var(--border2); padding: 6px 15px; border-radius: 12px; font-size: 11px; color: var(--text); margin-top: 5px; }
+.fw-tree-svg { width: 80px; height: 70px; margin: 0 auto 12px; display: block; overflow: visible; }
+/* Final Aggregation = Orange */
+.fw-rf-agg { background: var(--orange-dim); border: 1px solid var(--orange); padding: 14px 40px; border-radius: 8px; color: var(--orange2); font-weight: bold; font-size: 14px; cursor: crosshair; box-shadow: 0 4px 15px rgba(249,115,22,0.3); }
+
+/* === 4. Polynomial (Drawing Anim) === */
+.fw-poly-svg { width: 100%; max-width: 600px; height: 320px; overflow: visible; cursor: crosshair; }
+.fw-poly-grid line { stroke: rgba(255,255,255,0.05); stroke-dasharray: 4; stroke-width: 1; }
+.fw-poly-axis { stroke: var(--text2); stroke-width: 2; }
+.fw-poly-curve { fill: none; stroke: var(--orange); stroke-width: 3; filter: drop-shadow(0 0 6px rgba(249,115,22,0.4)); stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 0.8s ease-out forwards; }
+.fw-poly-dot { fill: var(--orange2); stroke: var(--bg2); stroke-width: 2; transform-origin: center; opacity: 0; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+.fw-poly-text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.fw-poly-formula-bg { fill: var(--surface2); stroke: var(--border2); rx: 6; }
+/* Final Equation Box = Orange */
+.fw-poly-formula-bg-final { fill: var(--orange-dim); stroke: var(--orange); filter: drop-shadow(0 0 8px rgba(249,115,22,0.3)); }
+.fw-poly-formula-text { fill: var(--orange2); font-family: var(--mono); font-size: 14px; font-weight: bold; }
+/* =============================================
+   MOBILE RESPONSIVE — Additional Overrides
+   ============================================= */
+
+/* ---- Meta viewport safety ---- */
+* { box-sizing: border-box; }
+
+/* ---- Hero ---- */
+@media (max-width: 480px) {
+  .fw-hero {
+    padding: 48px 16px 40px;
+  }
+  .fw-hero__h1 {
+    font-size: clamp(26px, 8vw, 38px);
+  }
+  .fw-hero__lead {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .fw-hero__eyebrow {
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+}
+
+/* ---- Section inner padding ---- */
+@media (max-width: 480px) {
+  .fw-section__inner,
+  .fw-poster__wrapper {
+    padding: 0 14px;
+  }
+  .fw-waste,
+  .fw-abstract,
+  .fw-calc,
+  .fw-methodology {
+    padding: 40px 0;
+  }
+}
+
+/* ---- Calculator layout: stack on mobile ---- */
+@media (max-width: 680px) {
+  .fw-calc__layout {
+    grid-template-columns: 1fr;
+  }
+  .fw-form {
+    padding: 20px 16px;
+  }
+  .fw-result-panel {
+    min-height: 200px;
+  }
+  .fw-result {
+    padding: 20px 16px;
+  }
+  .fw-result__main-val {
+    font-size: 32px;
+  }
+  .fw-btn--primary {
+    width: 100%;
+    min-width: unset;
+  }
+  .fw-form__actions {
+    flex-direction: column;
+  }
+  .fw-btn--ghost {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ---- Impact bar: prevent overflow on narrow screens ---- */
+@media (max-width: 640px) {
+  .fw-impact {
+    padding: 20px 14px;
+    overflow-x: hidden;
+  }
+  .fw-impact__row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .fw-impact__method {
+    min-width: unset;
+    width: 100%;
+    font-size: 11px;
+  }
+  .fw-impact__track {
+    width: 100%;
+    height: 28px;
+  }
+  .fw-impact__fill {
+    font-size: 11px;
+    padding: 0 8px;
+  }
+  .fw-impact__fill-label {
+    font-size: 11px;
+  }
+}
+
+/* ---- Prevent full-page horizontal overflow ---- */
+@media (max-width: 768px) {
+  .fw-page {
+    max-width: 100vw;
+    overflow-x: clip; /* clip ไม่กระทบ scroll children */
+  }
+  /* Section wrappers ต้องไม่กว้างเกิน viewport */
+  .fw-section__inner,
+  .fw-hero__inner,
+  .fw-poster__wrapper {
+    max-width: 100%;
+  }
+}
+
+/* ---- Visualizer ---- */
+@media (max-width: 600px) {
+  .fw-vis {
+    /* ห้าม overflow ออกนอก card */
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .fw-vis__tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .fw-vis__tabs::-webkit-scrollbar { display: none; }
+
+  .fw-vis__tab {
+    flex: 0 0 auto;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+
+  .fw-vis__canvas {
+    padding: 16px 0 !important;
+    min-height: 260px !important;
+    overflow: hidden !important; /* canvas เองไม่ scroll */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* wrapper div ข้างในที่ scroll จริง */
+  .fw-vis__scroll-inner {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .fw-vis__scroll-inner::-webkit-scrollbar { display: none; }
+
+  /* SVG: fixed width → canvas จะ scroll */
+  .fw-ann-svg {
+    display: block;
+    width: 750px !important;
+    max-width: none !important;
+    height: 340px;
+  }
+  .fw-xgb3-svg {
+    display: block;
+    width: 750px !important;
+    max-width: none !important;
+    height: 420px;
+  }
+  .fw-poly-svg {
+    display: block;
+    width: 600px !important;
+    max-width: none !important;
+    height: 320px;
+  }
+
+  /* Random Forest */
+  .fw-rf-container {
+    width: max-content;
+    min-width: 100%;
+    padding: 0 16px;
+  }
+  .fw-rf-branches {
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+  .fw-rf-branch {
+    flex: 0 0 auto;
+    min-width: 110px;
+  }
+
+  .fw-vis__info {
+    margin: 14px;
+    padding: 12px 14px;
+  }
+}
+
+/* ---- Model Performance table: scroll แนวนอน ---- */
+@media (max-width: 640px) {
+  /* wrapper ที่ห่อ table อยู่แล้วใน JSX */
+  .fw-eval__table-wrap > div[style] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fw-eval__table-wrap {
+    overflow: hidden;
+    padding: 16px 12px;
+  }
+  /* ป้องกัน heading title ล้น */
+  .fw-eval__title {
+    font-size: 12px;
+    word-break: break-word;
+  }
+  .fw-eval__table {
+    font-size: 12px;
+    /* ไม่ใช้ min-width ตายตัว ให้ scroll แทน */
+    width: max-content;
+    min-width: 100%;
+  }
+  .fw-eval__table th,
+  .fw-eval__table td {
+    padding: 10px 8px;
+    white-space: nowrap;
+  }
+}
+
+/* ---- Abstract 3-col -> 1-col on mobile ---- */
+@media (max-width: 640px) {
+  .fw-abstract__cols {
+    grid-template-columns: 1fr;
+  }
+  .fw-abstract__col {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 16px;
+  }
+  .fw-abstract__col:last-child {
+    border-bottom: none;
+  }
+  .fw-abstract__result {
+    padding: 18px 16px;
+    font-size: 14px;
+  }
+}
+
+/* ---- Eval table: horizontal scroll ---- */
+@media (max-width: 640px) {
+  .fw-eval__table-wrap {
+    padding: 16px 12px;
+  }
+  .fw-eval__table {
+    font-size: 12px;
+    min-width: 420px;
+  }
+  .fw-eval__table th,
+  .fw-eval__table td {
+    padding: 10px 6px;
+  }
+}
+
+/* ---- Metrics grid: 2-col on small mobile ---- */
+@media (max-width: 480px) {
+  .fw-metrics__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .fw-metric-card {
+    padding: 18px 10px;
+  }
+  .fw-metric-card__label {
+    font-size: 22px;
+  }
+}
+
+/* ---- Derived stats: stay 3-col even on small but shrink ---- */
+@media (max-width: 380px) {
+  .fw-derived__row {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .fw-derived__val {
+    font-size: 13px;
+  }
+  .fw-derived__stat {
+    padding: 10px 4px;
+  }
+}
+
+/* ---- Footer: wrap on mobile ---- */
+@media (max-width: 500px) {
+  .fw-footer {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    padding: 20px 16px;
+    font-size: 11px;
+  }
+  .fw-footer__dot {
+    display: none;
+  }
+}
+
+/* ---- Waste grid: already 1-col at 640px — tighten padding ---- */
+@media (max-width: 480px) {
+  .fw-wtopic {
+    padding: 18px 14px;
+  }
+}
+
+/* ---- Poster ---- */
+@media (max-width: 480px) {
+  .fw-poster-section {
+    padding: 40px 0 50px;
+  }
+  .fw-poster__box {
+    padding: 12px;
+  }
+}
+
+/* ---- Result main-row: stack blocks vertically on tiny screens ---- */
+@media (max-width: 360px) {
+  .fw-result__main-row {
+    flex-direction: column;
+  }
+  .fw-result__main-sep {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+}
+
+/* ---- Eval table scroll wrapper ---- */
+@media (max-width: 640px) {
+  .fw-eval__table-scroll {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .fw-eval__table-scroll::-webkit-scrollbar { display: none; }
+}
