@@ -1115,7 +1115,7 @@
 .fw-xgb3-line { stroke: var(--muted); stroke-width: 2; fill: none; }
 .fw-xgb3-line-res { stroke: var(--text); stroke-width: 1.5; stroke-dasharray: 4; fill: none; animation: flowLine 1.5s linear infinite; }
 /* Node Colors */
-.fw-xgb3-node-b { fill: #0ea5e9; stroke: rgba(0,0,0,0.3); stroke-width: 2; }
+.fw-xgb3-node-b { fill: #ffee00; stroke: rgba(0,0,0,0.3); stroke-width: 2; }
 .fw-xgb3-node-r { fill: #ef4444; stroke: rgba(0,0,0,0.3); stroke-width: 2; }
 
 /* === 3. Random Forest (Parallel Anim) === */

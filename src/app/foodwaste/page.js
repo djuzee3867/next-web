@@ -150,7 +150,7 @@ function ModelVisualizer() {
       {/* Step 1: Instance */}
       <g className="fw-xgb3-box-group fw-anim-fast fw-delay-1" onMouseEnter={() => handleHover("Instance", "ข้อมูลต้นฉบับที่นำเข้าสู่กระบวนการ Training")} onTouchStart={() => handleHover("Instance", "ข้อมูลต้นฉบับที่นำเข้าสู่กระบวนการ Training")} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>
          <rect x="300" y="10" width="150" height="30" className="fw-xgb3-box" />
-         <text x="375" y="25" className="fw-xgb3-text" style={{fontWeight:'bold'}}>Instance</text>
+         <text x="375" y="25" className="fw-xgb3-text" style={{fontWeight:'bold'}}>Dataset</text>
       </g>
 
       {/* Lines Instance -> Subsets */}
@@ -294,23 +294,23 @@ function ModelVisualizer() {
         {activeTab === "rf" && (
           <div className="fw-rf-container">
             <div className="fw-rf-data fw-anim-fast fw-delay-1" onMouseEnter={() => handleHover("Dataset D (N records)", "ชุดข้อมูลตั้งต้นทั้งหมด 15,000 รายการ")} onTouchStart={() => handleHover("Dataset D (N records)", "ชุดข้อมูลตั้งต้นทั้งหมด 15,000 รายการ")} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>
-              Dataset D (X, Y)
+              Dataset
             </div>
             
             <div className="fw-rf-branches">
               {[1, 2, 'n'].map((num, idx) => (
                 // ปรับให้แอนิเมชันเร็วขึ้น
                 <div key={num} className="fw-rf-branch fw-anim-fast" style={{animationDelay: `${0.1 + (idx * 0.05)}s`}}>
-                  <div style={{color:'var(--border2)'}}>↓</div>
+                  <div style={{color:'#ffffff'}}>↓</div>
                   <div className="fw-rf-bag" onMouseEnter={() => handleHover("Bootstrap Aggregating (Bagging)", "สุ่มหยิบข้อมูลขึ้นมาสร้าง Dataset ย่อย ให้ต้นไม้มีเอกลักษณ์")} onTouchStart={() => handleHover("Bootstrap Aggregating (Bagging)", "สุ่มหยิบข้อมูลขึ้นมาสร้าง Dataset ย่อย ให้ต้นไม้มีเอกลักษณ์")} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>
                     Sample D_{num}
                   </div>
-                  <div style={{color:'var(--border2)'}}>↓</div>
+                  <div style={{color:'#ffffff)'}}>↓</div>
                   <div className="fw-rf-treebox" onMouseEnter={() => handleHover(`Decision Tree ${num}`, `สร้างต้นไม้ตัดสินใจอิสระต้นที่ ${num}`)} onTouchStart={() => handleHover(`Decision Tree ${num}`, `สร้างต้นไม้ตัดสินใจอิสระต้นที่ ${num}`)} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>
                      <SVHTree primary="var(--text2)" secondary="var(--muted)" leaf="var(--border2)" />
                      <div style={{fontSize:'13px', color:'var(--text)', fontWeight:'bold', marginTop:'5px'}}>Tree {num}</div>
                   </div>
-                  <div style={{color:'var(--border2)'}}>↓</div>
+                  <div style={{color:'#ffffff'}}>↓</div>
                   <div className="fw-rf-pred" onMouseEnter={() => handleHover(`Prediction ${num}`, "ผลทำนายของต้นไม้แต่ละต้น")} onTouchStart={() => handleHover(`Prediction ${num}`, "ผลทำนายของต้นไม้แต่ละต้น")} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>ŷ_{num}</div>
                 </div>
               ))}
@@ -463,15 +463,15 @@ export default function FoodWastePage() {
     {
       tag: "ประสิทธิภาพสูงสุด",
       title: "ANN (R-Squared 96.48%)",
-      body: "ANN ให้ประสิทธิภาพสูงสุด มีค่า MAE=8.22, RMSE=11.75, MAPE=12.37% ช่วยพยากรณ์ต้นทุนอาหารอ้างอิงจากเกณฑ์เส้นความยากจนได้อย่างมีนัยสำคัญ นำไปสู่การลดขยะอาหารอย่างเป็นรูปธรรม",
+      body: "ANN ให้ประสิทธิภาพสูงสุด มีค่า MAE=8.22, RMSE=11.75, MAPE=12.38% ช่วยพยากรณ์ต้นทุนอาหารอ้างอิงจากเกณฑ์เส้นความยากจนได้อย่างมีนัยสำคัญ นำไปสู่การลดขยะอาหารอย่างเป็นรูปธรรม",
     },
   ];
 
   const modelComparisons = [
-    { name: "ANN (Multi-Layer Perceptron)", r2: "96.48%", mae: "8.22", rmse: "11.75", mape: "12.37%", best: true },
-    { name: "XGBoost", r2: "93.12%", mae: "11.45", rmse: "15.20", mape: "16.80%", best: false },
-    { name: "Random Forest", r2: "91.30%", mae: "13.80", rmse: "18.55", mape: "19.40%", best: false },
-    { name: "Polynomial Regression", r2: "84.60%", mae: "19.50", rmse: "24.10", mape: "27.10%", best: false },
+    { name: "ANN (Multi-Layer Perceptron)", r2: "96.48%", mae: "8.22", rmse: "11.75", mape: "12.38%", best: true },
+    { name: "XGBoost", r2: "96.38%", mae: "8.26", rmse: "11.87", mape: "11.88%", best: false },
+    { name: "Random Forest", r2: "95.95%", mae: "8.74", rmse: "12.56", mape: "12.5%", best: false },
+    { name: "Polynomial Regression", r2: "96.42%", mae: "8.52", rmse: "11.82", mape: "15.61%", best: false },
   ];
 
 
@@ -483,7 +483,7 @@ export default function FoodWastePage() {
         <div className="fw-hero__inner">
           <div className="fw-hero__eyebrow">
             <span className="fw-tag">Machine Learning </span>
-            <span className="fw-tag fw-tag--dim">deep learning</span>
+            <span className="fw-tag">deep learning</span>
           </div>
           <h1 className="fw-hero__h1">
             Food Waste <span className="fw-orange">Predictor</span>
