@@ -80,7 +80,7 @@ function ModelVisualizer() {
     h1.forEach(y1 => h2.forEach(y2 => lines.push(<line key={`h1-${y1}-${y2}`} x1={xH1} y1={y1} x2={xH2} y2={y2} className="fw-ann-line" />)));
     h2.forEach(y1 => out.forEach(y2 => lines.push(<line key={`out-${y1}-${y2}`} x1={xH2} y1={y1} x2={xOut} y2={y2} className="fw-ann-line" />)));
 
-    const inputLabels = ["x₁ (Gender)", "x₂ (Age)", "x₃ (BMI)", "x₄ (Heart Rate)", "x₅ (Duration)"];
+    const inputLabels = ["x₁ (Gender)", "x₂ (Age)", "x₃ (Weight)", "x₄ (Height)", "x₅ (etc)"];
     
     
     return (
@@ -128,7 +128,7 @@ function ModelVisualizer() {
           <rect x={xOut - 30} y="130" width="60" height="60" className="fw-ann-box" style={{stroke: 'var(--orange)'}} />
           <circle cx={xOut} cy={out[0]} r="20" className="fw-ann-node final-node" />
           <text x={xOut} y={out[0]+4} textAnchor="middle" className="fw-ann-text fw-ann-text-hl" style={{color: 'var(--orange2)'}}>ŷ</text>
-          <text x={xOut + 35} y={out[0]+4} className="fw-ann-text fw-ann-text-hl">Kcal</text>
+          <text x={xOut + 35} y={out[0]+4} className="fw-ann-text fw-ann-text-hl"></text>
           <text x={xOut} y="215" textAnchor="middle" className="fw-ann-text fw-ann-text-hl">Output</text>
         </g>
       </svg>
@@ -241,10 +241,10 @@ function ModelVisualizer() {
       {/* Step 5: Residual Arrows */}
       <g className="fw-anim-fast fw-delay-5" onMouseEnter={() => handleHover("Residuals (ข้อผิดพลาด)", "ส่วนต่างระหว่างค่าจริงกับผลทำนาย (Error) จะถูกส่งไปเป็น 'เป้าหมาย' ให้ต้นไม้ถัดไปเรียนรู้")} onTouchStart={() => handleHover("Residuals (ข้อผิดพลาด)", "ส่วนต่างระหว่างค่าจริงกับผลทำนาย (Error) จะถูกส่งไปเป็น 'เป้าหมาย' ให้ต้นไม้ถัดไปเรียนรู้")} onMouseLeave={handleLeave} onTouchEnd={handleLeave}>
          <path d="M210,292 L250,292 L250,105 L290,105" className="fw-xgb3-line-res" markerEnd="url(#arrow-res)" />
-         <text x="240" y="278" className="fw-xgb3-text fw-xgb3-text-small" transform="rotate(-30 240 278)">Residual 1</text>
+         <text x="240" y="278" className="fw-xgb3-text fw-xgb3-text-small" transform="rotate(-30 240 278)"></text>
          
          <path d="M410,292 L450,292 L450,105 L490,105" className="fw-xgb3-line-res" markerEnd="url(#arrow-res)" />
-         <text x="440" y="278" className="fw-xgb3-text fw-xgb3-text-small" transform="rotate(-30 440 278)">Residual n-1</text>
+         <text x="440" y="278" className="fw-xgb3-text fw-xgb3-text-small" transform="rotate(-30 440 278)"></text>
       </g>
 
       {/* Lines Result -> Weighting */}
@@ -751,7 +751,7 @@ export default function FoodWastePage() {
         <div className="fw-poster__wrapper">
           <div className="fw-poster__box">
             <div className="fw-poster__header">
-              <h2 className="fw-poster__title">Research Poster (A0)</h2>
+              <h2 className="fw-poster__title">Research Poster</h2>
             </div>
             <div className="fw-poster__a0">
               <div className="fw-poster__placeholder"><Image src={pic} alt="Picture of the author" />;</div>
