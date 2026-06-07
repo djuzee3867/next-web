@@ -27,13 +27,14 @@ export default function ScoreTrackerPage() {
 
   const [flash, setFlash]               = useState(null);
   const [baseSet, setBaseSet]           = useState(false);
-  const tableRef = useRef(null);
+  
+  // เปลี่ยนชื่อ Ref จากตาราง มาเป็น Scoreboard แทน
+  const scoreboardRef = useRef(null);
   const [isMounted, setIsMounted]       = useState(false);
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm]   = useState({ action: '', bet: '', rawMultiplier: '' });
 
-  // === State สำหรับ Popup ยืนยันการรีเซ็ต ===
   const [showResetModal, setShowResetModal] = useState(false);
 
   useEffect(() => {
@@ -62,7 +63,12 @@ export default function ScoreTrackerPage() {
     setTimeout(() => setFlash(null), 600);
   };
 
-  const scrollToTable = () => setTimeout(() => tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  // ฟังก์ชันสำหรับเลื่อนจอขึ้นไปที่กล่องเงินทุน (จัดให้อยู่กลางจอพอดี)
+  const scrollToScoreboard = () => {
+    setTimeout(() => {
+      scoreboardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  };
 
   const recalculateAndSave = (currentHist) => {
     if (!currentHist || currentHist.length === 0) {
@@ -150,7 +156,7 @@ export default function ScoreTrackerPage() {
     };
     recalculateAndSave([newRow, ...history]);
     setBaseInput('');
-    scrollToTable();
+    scrollToScoreboard(); // สั่งเลื่อนขึ้นไปดูกล่องเงิน
   };
 
   const handleWin = () => {
@@ -163,7 +169,7 @@ export default function ScoreTrackerPage() {
     };
     recalculateAndSave([newRow, ...history]);
     setBetInput('');
-    scrollToTable();
+    scrollToScoreboard(); // สั่งเลื่อนขึ้นไปดูกล่องเงิน
   };
 
   const handleLose = () => {
@@ -176,14 +182,13 @@ export default function ScoreTrackerPage() {
     };
     recalculateAndSave([newRow, ...history]);
     setBetInput('');
-    scrollToTable();
+    scrollToScoreboard(); // สั่งเลื่อนขึ้นไปดูกล่องเงิน
   };
 
-  // === ฟังก์ชันกดยืนยันการรีเซ็ตใน Popup ===
   const confirmReset = () => {
     recalculateAndSave([]);
     localStorage.removeItem('invest_game_data');
-    setShowResetModal(false); // ปิด Popup
+    setShowResetModal(false);
   };
 
   if (!isMounted) return <div style={{ minHeight: '100vh', backgroundColor: '#060913' }}></div>;
@@ -197,7 +202,6 @@ export default function ScoreTrackerPage() {
   return (
     <div className={styles.page}>
       
-      {/* ─── Modal Popup ยืนยันการล้างข้อมูล ─── */}
       {showResetModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -208,40 +212,28 @@ export default function ScoreTrackerPage() {
               ข้อมูลที่บันทึกไว้จะหายไป และไม่สามารถกู้คืนได้!
             </p>
             <div className={styles.modalActions}>
-              <button 
-                className={`${styles.btn} ${styles.btnGhost}`} 
-                onClick={() => setShowResetModal(false)}
-              >
-                ยกเลิก
-              </button>
-              <button 
-                className={styles.btnResetDanger} 
-                onClick={confirmReset}
-                style={{ width: '100%', justifyContent: 'center' }}
-              >
-                ล้างข้อมูลเลย
-              </button>
+              <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setShowResetModal(false)}>ยกเลิก</button>
+              <button className={styles.btnResetDanger} onClick={confirmReset} style={{ width: '100%', justifyContent: 'center' }}>ล้างข้อมูลเลย</button>
             </div>
           </div>
         </div>
       )}
 
       <div className={styles.container}>
-        {/* Header & Scoreboard */}
         <header className={styles.header}>
           <div>
             <h1 className={styles.title}>INVEST<span className={styles.titleAccent}>GAME</span></h1>
             <p className={styles.subtitle}>ระบบคำนวณเงินเกมลงทุนสำหรับ Staff</p>
           </div>
           <div className={styles.headerActions}>
-            {/* กดปุ่มนี้แล้ว Popup จะเด้งขึ้นมา */}
             <button className={styles.btnResetDanger} onClick={() => setShowResetModal(true)} disabled={history.length === 0}>
               ✕ ล้างข้อมูล
             </button>
           </div>
         </header>
 
-        <div className={scoreboardClass}>
+        {/* นำ ref มาแปะไว้ที่กล่อง Scoreboard นี้ เพื่อให้เป้าหมายการเลื่อนจอมาหยุดตรงนี้ */}
+        <div className={scoreboardClass} ref={scoreboardRef}>
           <div className={styles.scoreboardLeft}>
             <div className={styles.scoreLabel}>เงินทุนคงเหลือปัจจุบัน</div>
             <div className={styles.scoreValue}>{fmt(currentScore)}</div>
@@ -252,7 +244,6 @@ export default function ScoreTrackerPage() {
           </div>
         </div>
 
-        {/* Forms */}
         {!baseSet && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>ตั้งค่าเงินทุนเริ่มต้นให้กลุ่ม</div>
@@ -299,8 +290,7 @@ export default function ScoreTrackerPage() {
 
         <div className={styles.divider} />
 
-        {/* History Table */}
-        <div className={styles.tableSection} ref={tableRef}>
+        <div className={styles.tableSection}>
           <div className={styles.tableSectionTitle}>ประวัติการทำรายการ</div>
           <div className={styles.tableWrap}>
             {history.length === 0 ? (
@@ -325,7 +315,6 @@ export default function ScoreTrackerPage() {
                   {history.map((row, i) => {
                     const isEditing = editingId === row.id;
 
-                    // โหมดแก้ไข (Edit Mode)
                     if (isEditing) {
                       return (
                         <tr key={row.id} className={styles.trBody} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
@@ -358,7 +347,6 @@ export default function ScoreTrackerPage() {
                       );
                     }
 
-                    // โหมดแสดงผลปกติ (View Mode)
                     const deltaStr = row.delta === null ? '—' : row.delta > 0 ? `+${fmt(row.delta)}` : fmt(row.delta);
                     const deltaClass = row.delta === null ? styles.tdDeltaZero : row.delta > 0 ? styles.tdDeltaPos : styles.tdDeltaNeg;
 

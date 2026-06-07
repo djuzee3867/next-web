@@ -14,6 +14,9 @@ export default function LinkPage() {
     { title: "Schedule", desc: "Timetable and appointment tracking", url: "/Schedule" },
     { title: "QR Code", desc: "Generate and manage quick links", url: "/qr" },
     { title: "Foodwaste", desc: "The Past of Research for KKR-NCST", url: "/foodwaste" },
+    { title: "Wheel Spin", desc: "Wheel Spin", url: "/wheel" },
+    { title: "Investgame", desc: "investgame", url: "/Score" },
+
   ];
 
   return (
