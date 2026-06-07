@@ -27,7 +27,7 @@ export default function LinkPage() {
         <div className="section-header">
           <div>
             <h1 className="main-title">djuzee</h1>
-            <h3>Quick Access Links</h3>
+            <h3>Quick Access Links </h3>
           </div>
           <span className="count-badge">{links.length} Links</span>
         </div>
