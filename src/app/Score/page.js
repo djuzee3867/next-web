@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import styles from './page.module.css';
 
+// กำหนดระดับความยาก และตัวคูณตามกติกาใหม่ล่าสุด
 const DIFFICULTIES = [
-  { id: 'easy',   label: 'ง่าย (x1)',    multiplier: 1, classSuffix: '1' },
-  { id: 'medium', label: 'ปานกลาง (x2)', multiplier: 2, classSuffix: '2' },
-  { id: 'hard',   label: 'ยาก (x3)',     multiplier: 3, classSuffix: '3' },
+  { id: 'easy',     label: 'ง่าย (x2)',       multiplier: 2, classSuffix: '1' },
+  { id: 'medium',   label: 'ปานกลาง (x3)',    multiplier: 3, classSuffix: '2' },
+  { id: 'hard',     label: 'ยาก (x4)',        multiplier: 4, classSuffix: '3' },
+  { id: 'veryhard', label: 'ยากมาก (x5)',     multiplier: 5, classSuffix: '4' },
 ];
 
 function fmt(n) {
@@ -18,17 +20,17 @@ function fmt(n) {
 export default function ScoreTrackerPage() {
   const [currentScore, setCurrentScore] = useState(0);
   const [history, setHistory]           = useState([]);
-  const [baseInput, setBaseInput]       = useState('');
+  
+  // ตั้งค่า Default เริ่มต้นที่ 1000 
+  const [baseInput, setBaseInput]       = useState('1000');
   const [betInput, setBetInput]         = useState('');
   
   const [multiplierMode, setMultiplierMode] = useState('preset'); 
-  const [multiplier, setMultiplier]         = useState(1); 
+  const [multiplier, setMultiplier]         = useState(2); // เริ่มต้นที่โหมดง่าย (x2)
   const [customMult, setCustomMult]         = useState(''); 
 
   const [flash, setFlash]               = useState(null);
   const [baseSet, setBaseSet]           = useState(false);
-  
-  // เปลี่ยนชื่อ Ref จากตาราง มาเป็น Scoreboard แทน
   const scoreboardRef = useRef(null);
   const [isMounted, setIsMounted]       = useState(false);
 
@@ -37,6 +39,7 @@ export default function ScoreTrackerPage() {
 
   const [showResetModal, setShowResetModal] = useState(false);
 
+  // โหลดข้อมูลเก่าจาก LocalStorage
   useEffect(() => {
     const savedData = localStorage.getItem('invest_game_data');
     if (savedData) {
@@ -52,6 +55,7 @@ export default function ScoreTrackerPage() {
     setIsMounted(true);
   }, []);
 
+  // บันทึกข้อมูลอัตโนมัติ
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('invest_game_data', JSON.stringify({ currentScore, history, baseSet }));
@@ -63,7 +67,6 @@ export default function ScoreTrackerPage() {
     setTimeout(() => setFlash(null), 600);
   };
 
-  // ฟังก์ชันสำหรับเลื่อนจอขึ้นไปที่กล่องเงินทุน (จัดให้อยู่กลางจอพอดี)
   const scrollToScoreboard = () => {
     setTimeout(() => {
       scoreboardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -77,10 +80,8 @@ export default function ScoreTrackerPage() {
       setBaseSet(false);
       return;
     }
-
     let runningTotal = 0;
     const reversed = [...currentHist].reverse();
-    
     const newHist = reversed.map((row) => {
       if (row.action === 'SET') {
         const baseVal = row.editedBase !== undefined ? row.editedBase : row.result;
@@ -100,7 +101,6 @@ export default function ScoreTrackerPage() {
       }
       return row;
     });
-
     const finalHist = newHist.reverse();
     setHistory(finalHist);
     setCurrentScore(finalHist[0].result);
@@ -110,26 +110,14 @@ export default function ScoreTrackerPage() {
   const startEdit = (row) => {
     setEditingId(row.id);
     const currentMult = row.rawMultiplier || parseFloat(String(row.multiplier).replace('x', '')) || 1;
-    setEditForm({
-      action: row.action,
-      bet: row.action === 'SET' ? row.result : row.bet,
-      rawMultiplier: currentMult
-    });
+    setEditForm({ action: row.action, bet: row.action === 'SET' ? row.result : row.bet, rawMultiplier: currentMult });
   };
 
   const handleSaveEdit = (id) => {
     const mapped = history.map(h => {
       if (h.id === id) {
-        if (h.action === 'SET') {
-          return { ...h, editedBase: parseFloat(editForm.bet) || 0 };
-        } else {
-          return { 
-            ...h, 
-            action: editForm.action, 
-            bet: parseFloat(editForm.bet) || 0, 
-            rawMultiplier: parseFloat(editForm.rawMultiplier) || 1 
-          };
-        }
+        if (h.action === 'SET') return { ...h, editedBase: parseFloat(editForm.bet) || 0 };
+        return { ...h, action: editForm.action, bet: parseFloat(editForm.bet) || 0, rawMultiplier: parseFloat(editForm.rawMultiplier) || 1 };
       }
       return h;
     });
@@ -140,8 +128,7 @@ export default function ScoreTrackerPage() {
 
   const handleDelete = (id) => {
     if (confirm('แน่ใจหรือไม่ที่จะลบรายการนี้? (ระบบจะคำนวณยอดเงินสะสมใหม่ทั้งหมด)')) {
-      const filtered = history.filter(h => h.id !== id);
-      recalculateAndSave(filtered);
+      recalculateAndSave(history.filter(h => h.id !== id));
       triggerFlash('down');
     }
   };
@@ -149,14 +136,10 @@ export default function ScoreTrackerPage() {
   const handleSetBase = () => {
     const val = parseFloat(baseInput);
     if (isNaN(val)) return;
-    const newRow = {
-      id: Date.now(), label: 'เงินทุนเริ่มต้น', action: 'SET',
-      bet: '—', rawMultiplier: 1, multiplier: '—', result: val, delta: null,
-      timestamp: new Date().toLocaleTimeString('th-TH')
-    };
+    const newRow = { id: Date.now(), label: 'เงินทุนเริ่มต้น', action: 'SET', bet: '—', rawMultiplier: 1, multiplier: '—', result: val, delta: null, timestamp: new Date().toLocaleTimeString('th-TH') };
     recalculateAndSave([newRow, ...history]);
-    setBaseInput('');
-    scrollToScoreboard(); // สั่งเลื่อนขึ้นไปดูกล่องเงิน
+    setBaseInput('1000'); 
+    scrollToScoreboard();
   };
 
   const handleWin = () => {
@@ -169,7 +152,7 @@ export default function ScoreTrackerPage() {
     };
     recalculateAndSave([newRow, ...history]);
     setBetInput('');
-    scrollToScoreboard(); // สั่งเลื่อนขึ้นไปดูกล่องเงิน
+    scrollToScoreboard();
   };
 
   const handleLose = () => {
@@ -182,7 +165,7 @@ export default function ScoreTrackerPage() {
     };
     recalculateAndSave([newRow, ...history]);
     setBetInput('');
-    scrollToScoreboard(); // สั่งเลื่อนขึ้นไปดูกล่องเงิน
+    scrollToScoreboard();
   };
 
   const confirmReset = () => {
@@ -207,10 +190,7 @@ export default function ScoreTrackerPage() {
           <div className={styles.modalContent}>
             <div className={styles.modalIcon}>⚠️</div>
             <h3 className={styles.modalTitle}>ยืนยันการล้างข้อมูล</h3>
-            <p className={styles.modalText}>
-              คุณแน่ใจหรือไม่ที่จะ <b>"ล้างข้อมูลเกมทั้งหมด"</b> ?<br />
-              ข้อมูลที่บันทึกไว้จะหายไป และไม่สามารถกู้คืนได้!
-            </p>
+            <p className={styles.modalText}>คุณแน่ใจหรือไม่ที่จะ <b>"ล้างข้อมูลเกมทั้งหมด"</b> ?<br />ข้อมูลที่บันทึกไว้จะหายไป และไม่สามารถกู้คืนได้!</p>
             <div className={styles.modalActions}>
               <button className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setShowResetModal(false)}>ยกเลิก</button>
               <button className={styles.btnResetDanger} onClick={confirmReset} style={{ width: '100%', justifyContent: 'center' }}>ล้างข้อมูลเลย</button>
@@ -232,7 +212,6 @@ export default function ScoreTrackerPage() {
           </div>
         </header>
 
-        {/* นำ ref มาแปะไว้ที่กล่อง Scoreboard นี้ เพื่อให้เป้าหมายการเลื่อนจอมาหยุดตรงนี้ */}
         <div className={scoreboardClass} ref={scoreboardRef}>
           <div className={styles.scoreboardLeft}>
             <div className={styles.scoreLabel}>เงินทุนคงเหลือปัจจุบัน</div>
@@ -256,18 +235,40 @@ export default function ScoreTrackerPage() {
 
         <div className={`${styles.card} ${!baseSet ? styles.cardDisabled : ''}`}>
           <div className={styles.cardTitle}>กรอกเงินเดิมพัน & สรุปผลคำถาม</div>
+          
           <div className={styles.field} style={{ marginBottom: '1.25rem' }}>
             <label className={styles.fieldLabel}>เงินที่กลุ่มลงเดิมพันในข้อนี้</label>
             <input type="number" inputMode="numeric" className={styles.input} placeholder={baseSet ? "ระบุจำนวนเงินที่น้องลง..." : "กรุณาตั้งเงินทุนเริ่มต้นก่อน"} value={betInput} onChange={e => setBetInput(e.target.value)} disabled={!baseSet} />
           </div>
+
           <div className={styles.field} style={{ marginBottom: '1.25rem' }}>
-            <label className={styles.fieldLabel}>เลือกระดับความยาก (หรือกำหนดตัวคูณเอง)</label>
+            <label className={styles.fieldLabel}>เลือกระดับความยาก (ตัวคูณ)</label>
             <div className={styles.opGrid}>
               {DIFFICULTIES.map(diff => (
-                <button key={diff.id} disabled={!baseSet} className={`${styles.opPill} ${multiplierMode === 'preset' && multiplier === diff.multiplier ? styles['active' + diff.classSuffix] : ''}`} onClick={() => { setMultiplierMode('preset'); setMultiplier(diff.multiplier); }}>{diff.label}</button>
+                <button 
+                  key={diff.id} 
+                  disabled={!baseSet} 
+                  className={`${styles.opPill} ${multiplierMode === 'preset' && multiplier === diff.multiplier ? styles['active' + diff.classSuffix] : ''}`} 
+                  onClick={() => { 
+                    setMultiplierMode('preset'); 
+                    setMultiplier(diff.multiplier); 
+                  }}
+                >
+                  {diff.label}
+                </button>
               ))}
-              <button disabled={!baseSet} className={`${styles.opPill} ${multiplierMode === 'custom' ? styles.activeCustom : ''}`} onClick={() => { setMultiplierMode('custom'); setMultiplier(parseFloat(customMult) || 0); }}>กำหนดเอง</button>
+              <button 
+                disabled={!baseSet} 
+                className={`${styles.opPill} ${multiplierMode === 'custom' ? styles.activeCustom : ''}`} 
+                onClick={() => { 
+                  setMultiplierMode('custom'); 
+                  setMultiplier(parseFloat(customMult) || 0); 
+                }}
+              >
+                กำหนดเอง
+              </button>
             </div>
+
             {multiplierMode === 'custom' && (
               <div className={styles.field} style={{ marginTop: '0.75rem' }}>
                 <input type="number" inputMode="decimal" step="0.1" className={styles.input} style={{ borderColor: '#a855f7' }} placeholder="ระบุตัวคูณ เช่น 1.5, 4" value={customMult} onChange={e => { setCustomMult(e.target.value); setMultiplier(parseFloat(e.target.value) || 0); }} />
@@ -295,7 +296,6 @@ export default function ScoreTrackerPage() {
           <div className={styles.tableWrap}>
             {history.length === 0 ? (
               <div className={styles.emptyState}>
-                <span className={styles.emptyIcon}>📋</span>
                 <span className={styles.emptyText}>ยังไม่มีรายการบันทึกคะแนนในขณะนี้</span>
               </div>
             ) : (

@@ -382,3 +382,74 @@ select.editInput {
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ─── เพิ่มสีสำหรับระดับ "ยากมาก (x5)" ─── */
+.active4 { 
+  background: rgba(236, 72, 153, 0.1); /* สีชมพูเข้ม Neon */
+  border-color: #ec4899; 
+  color: #f472b6; 
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.2); 
+}
+
+/* ─── สไตล์สำหรับระบบ Timer (จับเวลา) ─── */
+.timerContainer {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timerDisplay {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-1);
+  letter-spacing: 2px;
+}
+
+.timerRed {
+  color: var(--red);
+  animation: pulse 1s infinite;
+}
+
+.timerControls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btnTimer {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.btnTimerPlay { background: var(--blue); }
+.btnTimerPlay:active { transform: scale(0.95); }
+
+.btnTimerPause { background: var(--amber); color: #000; }
+.btnTimerPause:active { transform: scale(0.95); }
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* ปรับให้ปุ่มความยาก 4 ปุ่ม จัดเรียงให้สวยงามบนมือถือ */
+@media (max-width: 480px) {
+  .opGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+}
