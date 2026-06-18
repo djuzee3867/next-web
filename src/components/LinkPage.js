@@ -16,6 +16,7 @@ export default function LinkPage() {
     { title: "Foodwaste", desc: "The Past of Research for KKR-NCST", url: "/foodwaste" },
     { title: "Wheel Spin", desc: "Wheel Spin", url: "/wheel" },
     { title: "Investgame", desc: "investgame", url: "/Score" },
+    { title: "led-banner", desc: "led", url: "/led-banner"}
     ]
   return (
     <div className="page-wrapper">
