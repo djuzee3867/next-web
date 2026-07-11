@@ -616,10 +616,19 @@ json.dumps({'code': ___code_str___, 'trace': trace})
       <header className="py-header">
         <div className="py-header-inner">
           <div className="brand">
-            <span className="brand-name">djuzeePython Visualizer</span>
+            <div className="brand-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+            </div>
+            <span className="brand-name">Python Visualizer</span>
           </div>
           <nav className="py-nav">
-            <a href="/" className="nav-btn">Linkpage</a>
+            <a href="/" className="nav-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Home
+            </a>
           </nav>
         </div>
       </header>
@@ -627,14 +636,14 @@ json.dumps({'code': ___code_str___, 'trace': trace})
       <main className="py-main">
         <section className="panel editor-panel">
           <div className="panel-header">
-            {/* tabs removed */}
+            <span className="panel-title">Code Editor</span>
             <div className="status">
               {loadingPyodide ? (
-                <span className="badge loading">กำลังโหลด Python</span>
+                <span className="badge loading"><span className="status-dot" />Loading Python…</span>
               ) : pyodide ? (
-                <span className="badge ok">พร้อมแล้ว</span>
+                <span className="badge ok"><span className="status-dot" />Ready</span>
               ) : (
-                <span className="badge error">โหลด failed</span>
+                <span className="badge error"><span className="status-dot" />Failed</span>
               )}
             </div>
           </div>
@@ -642,7 +651,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
           <div className="editor-wrap">
               <div className="editor-toolbar">
                 <div className="tool-group">
-                  <label className="tool-label">ตัวอย่าง</label>
+                  <label className="tool-label">Examples</label>
                   <select
                     className="tool-select"
                     onChange={(e) => {
@@ -655,7 +664,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
                     defaultValue=""
                   >
                     <option value="" disabled>Select…</option>
-                    <option value="fib">For_loop</option>
+                    <option value="fib">Fibonacci</option>
                   </select>
                 </div>
                 <div className="tool-group">
@@ -678,9 +687,18 @@ json.dumps({'code': ___code_str___, 'trace': trace})
                   </label>
                 </div>
                 <div className="tool-spacer" />
-                <button className="mini-btn" onPointerDown={ripple} onClick={async () => { try { await navigator.clipboard.writeText(code); } catch {} }}>Copy</button>
-                <button className="mini-btn" onPointerDown={ripple} onClick={async () => { try { const t = await navigator.clipboard.readText(); if (t) setCode(t); } catch {} }}>Paste</button>
-                <button className="mini-btn danger" onPointerDown={ripple} onClick={() => setCode('')}>Clear</button>
+                <button className="mini-btn" onPointerDown={ripple} onClick={async () => { try { await navigator.clipboard.writeText(code); } catch {} }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+                <button className="mini-btn" onPointerDown={ripple} onClick={async () => { try { const t = await navigator.clipboard.readText(); if (t) setCode(t); } catch {} }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+                  Paste
+                </button>
+                <button className="mini-btn danger" onPointerDown={ripple} onClick={() => setCode('')}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Clear
+                </button>
               </div>
               <EditorWithGutter
                 code={code}
@@ -695,7 +713,17 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 
           <div className="controls">
             <button className={`btn primary ${running ? 'busy' : ''}`} onPointerDown={ripple} onClick={() => runWithTutor(false)} disabled={!pyodide || loadingPyodide || running}>
-              {running ? "Tracing..." : "Run (Python Tutor)"}
+              {running ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{animation:'spin 1s linear infinite'}}><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>
+                  Tracing…
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Run
+                </>
+              )}
             </button>
             {awaitingInput && (
               <>
@@ -715,7 +743,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 
           {runError && (
             <div className="callout error">
-              <div className="callout-title">Error</div>
+              <div className="callout-title">⚠ Error</div>
               <div className="callout-body">{runError}</div>
             </div>
           )}
@@ -723,19 +751,19 @@ json.dumps({'code': ___code_str___, 'trace': trace})
 
         <section className="panel inspect-panel">
           <div className="panel-header">
-            <h2 className="panel-title">Python Tutor จาก pythontutor.com</h2>
+            <h2 className="panel-title">Python Tutor Visualization</h2>
             <div className="step-meta">
-              {tutorReady ? <span className="meta">พร้อมแล้ว</span> : <span className="meta">กำลังรอ</span>}
+              {tutorReady ? <span className="meta">● Ready</span> : <span className="meta">○ Waiting</span>}
             </div>
           </div>
           <div className="inspect-grid">
             <div className={`card tutor ${awaitingInput ? 'awaiting' : ''} ${tutorReady ? 'ready' : ''}`}>
-              <div className="card-title">Visualization</div>
+              <div className="card-title">Execution Trace</div>
               <div className="card-body">
                 <div id="opt-viz"></div>
                 {awaitingInput && (
                   <div style={{marginTop: 12, display: 'flex', gap: 8, alignItems: 'center'}}>
-                    <span style={{fontSize:12,color:'var(--muted)'}}>{inputPrompt || 'Input'}</span>
+                    <span style={{fontSize:12,color:'var(--ink-muted)'}}>{inputPrompt || 'Input'}</span>
                     <input
                       className="input prompt"
                       placeholder={inputPrompt || 'Input'}
@@ -747,7 +775,7 @@ json.dumps({'code': ___code_str___, 'trace': trace})
                     <button className="btn" onClick={submitInput} disabled={running || !pyodide}>Submit</button>
                   </div>
                 )}
-                {!tutorReady && <div className="empty">กด clear แล้ววางโค้ด</div>}
+                {!tutorReady && <div className="empty">Write code and press Run to visualize execution</div>}
               </div>
             </div>
           </div>
@@ -755,7 +783,16 @@ json.dumps({'code': ___code_str___, 'trace': trace})
       </main>
 
       <footer className="py-footer">
+        Python Visualizer · Powered by Pyodide & Python Tutor
       </footer>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .btn.primary { display: inline-flex; align-items: center; gap: 8px; }
+      `}</style>
     </div>
   );
 }
