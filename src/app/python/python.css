@@ -410,12 +410,13 @@
   color: var(--ink);
   outline: none;
   caret-color: var(--accent);
+  overflow: auto;
 }
 .editor-shell .editor::placeholder {
   color: var(--ink-faint);
 }
-.editor-shell .editor.wrap { white-space: pre-wrap; word-break: break-word; }
-.editor-shell .editor:not(.wrap) { white-space: pre; overflow: auto; }
+.editor-shell .editor.wrap { white-space: pre-wrap; word-break: break-word; overflow-x: hidden; }
+.editor-shell .editor:not(.wrap) { white-space: pre; }
 
 /* Scrollbar */
 .editor-shell .editor::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -613,9 +614,9 @@
   gap: 14px;
   padding: 0 14px 14px;
 }
-.inspect-grid .tutor { overflow: visible; }
-.inspect-grid .tutor .card-body { overflow: visible; position: relative; }
-.inspect-grid .tutor #opt-viz { min-height: 70vh; width: 100%; position: relative; overflow: visible; }
+.inspect-grid .tutor { overflow: hidden; }
+.inspect-grid .tutor .card-body { overflow: auto; position: relative; max-height: 80vh; }
+.inspect-grid .tutor #opt-viz { min-height: 50vh; width: 100%; position: relative; }
 
 .card {
   border: 1px solid var(--glass-border);
