@@ -567,6 +567,12 @@ json.dumps({'code': ___code_str___, 'trace': trace})
     rawInputsRef.current = [];
     setRawInputs([]);
     setInputValue("");
+    setTutorReady(false);
+    if (typeof window !== 'undefined') {
+      const viz = document.getElementById('opt-viz');
+      if (viz) viz.innerHTML = '';
+      if (window.myVisualizer) delete window.myVisualizer;
+    }
   };
 
   useEffect(() => {
