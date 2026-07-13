@@ -103,10 +103,7 @@ export default function LinkPage() {
     { title: "Schedule", desc: "Timetable and appointment tracking", url: "/Schedule", icon: <CalendarIcon /> },
     { title: "QR Code", desc: "Generate and manage quick links", url: "/qr", icon: <QrIcon /> },
     { title: "Foodwaste", desc: "The Past of Research for KKR-NCST", url: "/foodwaste", icon: <ChartIcon /> },
-    { title: "Wheel Spin", desc: "Wheel Spin", url: "/wheel", icon: <GridIcon /> },
-    { title: "Investgame", desc: "investgame", url: "/Score", icon: <ChartIcon /> },
-    { title: "led-banner", desc: "led", url: "/led-banner", icon: <MonitorIcon /> },
-    { title: "Duck Race", desc: "Fun duck racing game with random results 🦆", url: "/duck-race", icon: <DuckIcon /> }
+    { title: "Wheel Spin", desc: "Wheel Spin", url: "/spin", icon: <GridIcon /> },
   ];
 
   if (!mounted) return null;
