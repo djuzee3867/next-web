@@ -788,9 +788,6 @@ json.dumps({'code': ___code_str___, 'trace': trace})
         </section>
       </main>
 
-      <footer className="py-footer">
-        Python Visualizer · Powered by Pyodide & Python Tutor
-      </footer>
 
       <style>{`
         @keyframes spin {
